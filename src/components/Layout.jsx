@@ -30,6 +30,9 @@ function Layout() {
               <Nav.Link as={NavLink} to="/about.html">
                 About
               </Nav.Link>
+              <Nav.Link as={NavLink} to="/movies">
+                Movies
+              </Nav.Link>
             </Nav>
             <Button
               aria-label="Open cart"
