@@ -1,0 +1,148 @@
+.store-page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  color: #222831;
+}
+
+.store-nav {
+  background: #1f2933;
+  border-bottom: 3px solid #56ccf2;
+}
+
+.store-nav .nav-link {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.store-nav .nav-link:hover,
+.store-nav .nav-link.active {
+  color: #ffffff;
+}
+
+.cart-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.store-header {
+  padding: 3.75rem 0;
+  text-align: center;
+  color: #ffffff;
+  background:
+    linear-gradient(rgba(31, 41, 51, 0.72), rgba(31, 41, 51, 0.72)),
+    url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1600&q=80')
+      center/cover;
+}
+
+.store-header h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  font-weight: 700;
+}
+
+.products-section {
+  padding: 3.5rem 0 4.5rem;
+}
+
+.section-heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.section-heading p {
+  margin-bottom: 0.35rem;
+  color: #2f80ed;
+  letter-spacing: 0.08rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.12);
+}
+
+.product-image-wrap {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.product-image-wrap img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.25s ease;
+}
+
+.product-card:hover .product-image-wrap img {
+  transform: scale(1.03);
+}
+
+.product-card .card-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.price {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.product-footer .btn {
+  border: 0;
+  border-radius: 4px;
+  background: #2d9cdb;
+}
+
+.product-footer .btn:hover {
+  background: #1d7fb5;
+}
+
+.store-footer {
+  padding: 2rem 0;
+  color: #ffffff;
+  background: #2d9cdb;
+}
+
+.store-footer h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+}
+
+@media (max-width: 575.98px) {
+  .store-header {
+    padding: 2.75rem 0;
+  }
+
+  .products-section {
+    padding: 2.5rem 0 3.25rem;
+  }
+
+  .product-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
