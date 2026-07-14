@@ -192,6 +192,12 @@
   background: #1d7fb5;
 }
 
+.fetch-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
 .loading-state {
   display: flex;
   align-items: center;
