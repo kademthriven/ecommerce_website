@@ -49,6 +49,11 @@
   padding: 3.5rem 0 4.5rem;
 }
 
+.about-section {
+  padding: 3.5rem 0 4.5rem;
+  background: #ffffff;
+}
+
 .section-heading {
   margin-bottom: 2rem;
   text-align: center;
@@ -117,6 +122,31 @@
 
 .product-footer .btn:hover {
   background: #1d7fb5;
+}
+
+.about-content {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.about-image {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+}
+
+.about-copy {
+  color: #4b5563;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.about-copy p + p {
+  margin-top: 1rem;
 }
 
 .cart-panel {
@@ -230,6 +260,21 @@
 
   .products-section {
     padding: 2.5rem 0 3.25rem;
+  }
+
+  .about-section {
+    padding: 2.5rem 0 3.25rem;
+  }
+
+  .about-content {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .about-image {
+    width: 170px;
+    height: 170px;
   }
 
   .product-footer {
