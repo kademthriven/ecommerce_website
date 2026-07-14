@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
-import { ShoppingCart } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { MonitorPlay, Music2, Play, Share2, ShoppingCart } from 'lucide-react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import Cart from './Cart'
 import useCart from '../hooks/useCart'
 
 function Layout() {
   const [showCart, setShowCart] = useState(false)
   const { cartQuantity } = useCart()
+  const location = useLocation()
+  const isHomePage = location.pathname === '/' || location.pathname === '/index.html'
 
   return (
     <div className="store-page">
@@ -19,7 +21,7 @@ function Layout() {
           <Navbar.Toggle aria-controls="store-navigation" />
           <Navbar.Collapse id="store-navigation">
             <Nav className="mx-auto">
-              <Nav.Link as={NavLink} to="/" end>
+              <Nav.Link as={NavLink} to="/index.html">
                 Home
               </Nav.Link>
               <Nav.Link as={NavLink} to="/store">
@@ -50,14 +52,39 @@ function Layout() {
       <header className="store-header">
         <Container>
           <h1>The Generics</h1>
+          {isHomePage && (
+            <div className="home-hero-actions">
+              <Button variant="outline-light" className="latest-album-button">
+                Get our Latest Album
+              </Button>
+              <Button
+                aria-label="Play latest album"
+                variant="outline-info"
+                className="play-button"
+              >
+                <Play fill="currentColor" size={34} aria-hidden="true" />
+              </Button>
+            </div>
+          )}
         </Container>
       </header>
 
       <Outlet />
 
       <footer className="store-footer">
-        <Container>
+        <Container className="footer-content">
           <h2>The Generics</h2>
+          <div className="social-links">
+            <a href="https://www.youtube.com" aria-label="YouTube">
+              <MonitorPlay size={28} aria-hidden="true" />
+            </a>
+            <a href="https://spotify.com" aria-label="Spotify">
+              <Music2 size={28} aria-hidden="true" />
+            </a>
+            <a href="https://facebook.com" aria-label="Facebook">
+              <Share2 size={28} aria-hidden="true" />
+            </a>
+          </div>
         </Container>
       </footer>
     </div>

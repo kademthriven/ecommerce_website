@@ -45,6 +45,34 @@
   font-weight: 700;
 }
 
+.home-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.latest-album-button {
+  border-width: 2px;
+  border-radius: 4px;
+  padding: 0.7rem 1.6rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.play-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 78px;
+  height: 78px;
+  border-width: 2px;
+  border-radius: 50%;
+  color: #56ccf2;
+}
+
+.home-section,
 .products-section {
   padding: 3.5rem 0 4.5rem;
 }
@@ -121,6 +149,45 @@
 }
 
 .product-footer .btn:hover {
+  background: #1d7fb5;
+}
+
+.tour-list {
+  max-width: 960px;
+  margin: 0 auto;
+  background: #ffffff;
+}
+
+.tour-row {
+  display: grid;
+  grid-template-columns: 90px minmax(130px, 1fr) minmax(180px, 1.5fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #d7dee6;
+}
+
+.tour-date {
+  color: #222831;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tour-city,
+.tour-venue {
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.tour-button {
+  min-width: 135px;
+  border: 0;
+  border-radius: 4px;
+  text-transform: uppercase;
+  background: #2d9cdb;
+}
+
+.tour-button:hover {
   background: #1d7fb5;
 }
 
@@ -246,6 +313,13 @@
   background: #2d9cdb;
 }
 
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
 .store-footer h2 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
@@ -253,11 +327,32 @@
   font-weight: 700;
 }
 
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  color: #1f2933;
+}
+
 @media (max-width: 575.98px) {
   .store-header {
     padding: 2.75rem 0;
   }
 
+  .home-section,
   .products-section {
     padding: 2.5rem 0 3.25rem;
   }
@@ -277,8 +372,24 @@
     height: 170px;
   }
 
+  .tour-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    text-align: center;
+  }
+
+  .tour-button {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
   .product-footer {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
   }
 }
