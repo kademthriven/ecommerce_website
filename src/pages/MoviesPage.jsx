@@ -1,32 +1,67 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Alert, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap'
 
 const filmsUrl = 'https://swapi.info/api/films'
+const retryErrorMessage = 'Something went wrong ....Retrying'
 
 function MoviesPage() {
   const [films, setFilms] = useState([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const abortControllerRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+  const shouldRetryRef = useRef(false)
 
-  const fetchFilms = async () => {
-    setIsLoading(true)
+  useEffect(() => {
+    return () => {
+      shouldRetryRef.current = false
+      clearTimeout(retryTimeoutRef.current)
+      abortControllerRef.current?.abort()
+    }
+  }, [])
+
+  const cancelRetry = () => {
+    shouldRetryRef.current = false
+    clearTimeout(retryTimeoutRef.current)
+    abortControllerRef.current?.abort()
+    setIsLoading(false)
     setError('')
+  }
+
+  const fetchFilmsWithRetry = async () => {
+    abortControllerRef.current = new AbortController()
 
     try {
-      const response = await fetch(filmsUrl)
+      const response = await fetch(filmsUrl, {
+        signal: abortControllerRef.current.signal,
+      })
 
       if (!response.ok) {
-        throw new Error('Could not fetch films')
+        throw new Error(retryErrorMessage)
       }
 
       const data = await response.json()
       setFilms(data)
-    } catch (fetchError) {
-      setError(fetchError.message)
-      setFilms([])
-    } finally {
+      setError('')
       setIsLoading(false)
+      shouldRetryRef.current = false
+    } catch (fetchError) {
+      if (!shouldRetryRef.current || fetchError.name === 'AbortError') {
+        return
+      }
+
+      setError(retryErrorMessage)
+      setFilms([])
+      retryTimeoutRef.current = setTimeout(fetchFilmsWithRetry, 5000)
     }
+  }
+
+  const fetchFilms = () => {
+    clearTimeout(retryTimeoutRef.current)
+    shouldRetryRef.current = true
+    setIsLoading(true)
+    setError('')
+    fetchFilmsWithRetry()
   }
 
   return (
@@ -55,7 +90,17 @@ function MoviesPage() {
           </div>
         )}
 
-        {error && <Alert variant="danger">{error}</Alert>}
+        {error && (
+          <Alert
+            variant="danger"
+            className="retry-alert"
+          >
+            <span>{error}</span>
+            <Button variant="outline-danger" size="sm" onClick={cancelRetry}>
+              Cancel
+            </Button>
+          </Alert>
+        )}
 
         {!isLoading && !error && films.length > 0 && (
           <Row className="g-4">
