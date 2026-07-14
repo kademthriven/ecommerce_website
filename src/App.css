@@ -119,6 +119,87 @@
   background: #1d7fb5;
 }
 
+.cart-panel {
+  width: min(100vw, 620px) !important;
+}
+
+.cart-panel .offcanvas-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cart-table {
+  min-width: 520px;
+}
+
+.cart-table th {
+  color: #222831;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid #2d9cdb;
+}
+
+.cart-table td {
+  padding-block: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 180px;
+}
+
+.cart-item img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+}
+
+.quantity-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 34px;
+  padding: 0 0.75rem;
+  border: 1px solid #56ccf2;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 4px;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 1.25rem;
+}
+
+.purchase-btn {
+  display: block;
+  min-width: 170px;
+  margin: 1.5rem auto 0;
+  border: 0;
+  border-radius: 4px;
+  text-transform: uppercase;
+  background: #2d9cdb;
+}
+
+.purchase-btn:hover {
+  background: #1d7fb5;
+}
+
 .store-footer {
   padding: 2rem 0;
   color: #ffffff;

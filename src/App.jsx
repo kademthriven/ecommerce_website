@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { Badge, Button, Card, Col, Container, Nav, Navbar, Row } from 'react-bootstrap'
+import { ShoppingCart } from 'lucide-react'
+import Cart from './components/Cart'
 import './App.css'
 
 const productsArr = [
@@ -24,7 +27,39 @@ const productsArr = [
   },
 ]
 
+const cartElements = [
+  {
+    title: 'Colors',
+    price: 100,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%201.png',
+    quantity: 2,
+  },
+  {
+    title: 'Black and white Colors',
+    price: 50,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%202.png',
+    quantity: 3,
+  },
+  {
+    title: 'Yellow and Black Colors',
+    price: 70,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%203.png',
+    quantity: 1,
+  },
+]
+
 function App() {
+  const [showCart, setShowCart] = useState(false)
+  const [cartItems, setCartItems] = useState(cartElements)
+
+  const cartQuantity = cartItems.reduce((total, item) => total + item.quantity, 0)
+
+  const handleRemoveCartItem = (title) => {
+    setCartItems((currentCartItems) =>
+      currentCartItems.filter((item) => item.title !== title),
+    )
+  }
+
   return (
     <div className="store-page">
       <Navbar expand="lg" className="store-nav" variant="dark">
@@ -41,12 +76,26 @@ function App() {
               <Nav.Link href="#">Store</Nav.Link>
               <Nav.Link href="#">About</Nav.Link>
             </Nav>
-            <Button variant="outline-light" className="cart-preview">
-              Cart <Badge bg="light" text="dark">0</Badge>
+            <Button
+              aria-label="Open cart"
+              variant="outline-light"
+              className="cart-preview"
+              onClick={() => setShowCart(true)}
+            >
+              <ShoppingCart size={18} aria-hidden="true" />
+              <span>Cart</span>
+              <Badge bg="light" text="dark">{cartQuantity}</Badge>
             </Button>
           </Navbar.Collapse>
         </Container>
       </Navbar>
+
+      <Cart
+        cartItems={cartItems}
+        onClose={() => setShowCart(false)}
+        onRemove={handleRemoveCartItem}
+        show={showCart}
+      />
 
       <header className="store-header">
         <Container>
