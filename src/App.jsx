@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Badge, Button, Card, Col, Container, Nav, Navbar, Row } from 'react-bootstrap'
 import { ShoppingCart } from 'lucide-react'
 import Cart from './components/Cart'
+import useCart from './hooks/useCart'
 import './App.css'
 
 const productsArr = [
@@ -27,38 +28,9 @@ const productsArr = [
   },
 ]
 
-const cartElements = [
-  {
-    title: 'Colors',
-    price: 100,
-    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%201.png',
-    quantity: 2,
-  },
-  {
-    title: 'Black and white Colors',
-    price: 50,
-    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%202.png',
-    quantity: 3,
-  },
-  {
-    title: 'Yellow and Black Colors',
-    price: 70,
-    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%203.png',
-    quantity: 1,
-  },
-]
-
 function App() {
   const [showCart, setShowCart] = useState(false)
-  const [cartItems, setCartItems] = useState(cartElements)
-
-  const cartQuantity = cartItems.reduce((total, item) => total + item.quantity, 0)
-
-  const handleRemoveCartItem = (title) => {
-    setCartItems((currentCartItems) =>
-      currentCartItems.filter((item) => item.title !== title),
-    )
-  }
+  const { addItemToCart, cartQuantity } = useCart()
 
   return (
     <div className="store-page">
@@ -90,12 +62,7 @@ function App() {
         </Container>
       </Navbar>
 
-      <Cart
-        cartItems={cartItems}
-        onClose={() => setShowCart(false)}
-        onRemove={handleRemoveCartItem}
-        show={showCart}
-      />
+      <Cart onClose={() => setShowCart(false)} show={showCart} />
 
       <header className="store-header">
         <Container>
@@ -121,7 +88,11 @@ function App() {
                     <Card.Title>{product.title}</Card.Title>
                     <div className="product-footer mt-auto">
                       <span className="price">${product.price}</span>
-                      <Button variant="info" className="text-white fw-semibold">
+                      <Button
+                        variant="info"
+                        className="text-white fw-semibold"
+                        onClick={() => addItemToCart(product)}
+                      >
                         Add to Cart
                       </Button>
                     </div>

@@ -178,6 +178,16 @@
   border-radius: 4px;
 }
 
+.empty-cart-message {
+  margin: 2rem 0;
+  padding: 2rem;
+  color: #5f6b76;
+  text-align: center;
+  border: 1px dashed #b8c2cc;
+  border-radius: 8px;
+  background: #f8f9fb;
+}
+
 .cart-total {
   display: flex;
   justify-content: flex-end;
