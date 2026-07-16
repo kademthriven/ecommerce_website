@@ -76,6 +76,7 @@
 .movies-section,
 .contact-section,
 .product-detail-section,
+.signup-section,
 .products-section {
   padding: 3.5rem 0 4.5rem;
 }
@@ -562,6 +563,67 @@
   text-align: center;
 }
 
+.signup-card {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: #ffffff;
+  border-radius: 12px;
+  background: #2d006b;
+  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.18);
+}
+
+.signup-heading {
+  margin-bottom: 1.5rem;
+}
+
+.signup-heading p {
+  color: #c9a8ff;
+}
+
+.signup-card .form-label {
+  font-weight: 700;
+}
+
+.signup-card .form-control {
+  min-height: 46px;
+  color: #2d006b;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  background: #f1e6ff;
+}
+
+.signup-card .form-control:focus {
+  border-color: #c9a8ff;
+  box-shadow: 0 0 0 0.2rem rgba(201, 168, 255, 0.3);
+}
+
+.signup-submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-width: 200px;
+  min-height: 46px;
+  margin: 0 auto;
+  border-color: #9f5ccc;
+  background: #9f5ccc;
+  font-weight: 700;
+}
+
+.signup-submit-button:hover,
+.signup-submit-button:focus-visible,
+.signup-submit-button:active {
+  border-color: #873abb !important;
+  background: #873abb !important;
+}
+
+.signup-feedback {
+  margin: 1.5rem 0 0;
+  color: #222831;
+  text-align: center;
+}
+
 .about-content {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -727,6 +789,7 @@
   .movies-section,
   .contact-section,
   .product-detail-section,
+  .signup-section,
   .products-section {
     padding: 2.5rem 0 3.25rem;
   }

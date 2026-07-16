@@ -5,6 +5,7 @@ import ContactPage from './pages/ContactPage'
 import HomePage from './pages/HomePage'
 import MoviesPage from './pages/MoviesPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import SignUpPage from './pages/SignUpPage'
 import StorePage from './pages/StorePage'
 import './App.css'
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/contact-us" exact component={ContactPage} />
         <Route path="/movies" exact component={MoviesPage} />
         <Route path="/products/:productId" exact component={ProductDetailPage} />
+        <Route path="/signup" exact component={SignUpPage} />
         <Redirect to="/" />
       </Switch>
     </Layout>
