@@ -198,6 +198,45 @@
   margin-bottom: 2rem;
 }
 
+.add-movie-form {
+  max-width: 760px;
+  margin: 0 auto 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.12);
+}
+
+.add-movie-form .form-label {
+  color: #222831;
+  font-weight: 700;
+}
+
+.add-movie-form .form-control {
+  border-color: #d7dee6;
+  border-radius: 10px;
+}
+
+.add-movie-form .form-control:focus {
+  border-color: #2d9cdb;
+  box-shadow: 0 0 0 0.2rem rgba(45, 156, 219, 0.2);
+}
+
+.add-movie-button {
+  display: block;
+  min-width: 170px;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 999px;
+  background: #2d006b;
+}
+
+.add-movie-button:hover,
+.add-movie-button:focus-visible,
+.add-movie-button:active {
+  background: #43009c !important;
+}
+
 .loading-state {
   display: flex;
   align-items: center;

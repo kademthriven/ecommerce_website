@@ -1,8 +1,46 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap'
+import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
 
 const filmsUrl = 'https://swapi.info/api/films'
 const retryErrorMessage = 'Something went wrong ....Retrying'
+
+const AddMovieForm = memo(function AddMovieForm() {
+  const handleSubmit = useCallback((event) => {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const NewMovieObj = {
+      title: formData.get('title'),
+      openingText: formData.get('openingText'),
+      releaseDate: formData.get('releaseDate'),
+    }
+
+    console.log(NewMovieObj)
+  }, [])
+
+  return (
+    <Form className="add-movie-form" onSubmit={handleSubmit}>
+      <Form.Group className="mb-3" controlId="movie-title">
+        <Form.Label>Title</Form.Label>
+        <Form.Control name="title" type="text" required />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="movie-opening-text">
+        <Form.Label>Opening Text</Form.Label>
+        <Form.Control name="openingText" as="textarea" rows={4} required />
+      </Form.Group>
+
+      <Form.Group className="mb-4" controlId="movie-release-date">
+        <Form.Label>Release Date</Form.Label>
+        <Form.Control name="releaseDate" type="date" required />
+      </Form.Group>
+
+      <Button className="add-movie-button" type="submit">
+        Add Movie
+      </Button>
+    </Form>
+  )
+})
 
 const MovieCard = memo(function MovieCard({ film }) {
   return (
@@ -105,6 +143,8 @@ function MoviesPage() {
           <p className="text-uppercase fw-semibold">Fetch API</p>
           <h2>Star Wars Films</h2>
         </div>
+
+        <AddMovieForm />
 
         <div className="fetch-actions">
           <Button
