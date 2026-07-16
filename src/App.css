@@ -648,25 +648,61 @@
 .profile-card {
   max-width: 680px;
   margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   border: 0;
+  border-radius: 12px;
+  background: #ffffff;
   box-shadow: 0 14px 34px rgba(31, 41, 51, 0.12);
 }
 
-.profile-card .card-body {
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+.profile-heading {
+  margin-bottom: 2rem;
 }
 
-.profile-card h2 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
+.change-password-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.change-password-form .form-label {
+  display: block;
+  text-align: center;
   font-weight: 700;
 }
 
-.profile-eyebrow {
-  margin-bottom: 0.35rem;
-  color: #2f80ed;
-  font-weight: 800;
-  letter-spacing: 0.08rem;
+.change-password-form .form-control {
+  min-height: 46px;
+  border-color: #b9a8cc;
+}
+
+.change-password-form .form-control:focus {
+  border-color: #6f1d9b;
+  box-shadow: 0 0 0 0.2rem rgba(111, 29, 155, 0.2);
+}
+
+.change-password-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-width: 190px;
+  min-height: 46px;
+  margin: 1.5rem auto 0;
+  border-color: #2d006b;
+  background: #2d006b;
+  font-weight: 700;
+}
+
+.change-password-button:hover,
+.change-password-button:focus-visible,
+.change-password-button:active {
+  border-color: #43009c !important;
+  background: #43009c !important;
+}
+
+.profile-feedback {
+  margin: 1.5rem 0 0;
+  text-align: center;
 }
 
 .about-content {

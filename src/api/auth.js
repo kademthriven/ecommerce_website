@@ -12,21 +12,7 @@ export class FirebaseAuthError extends Error {
   }
 }
 
-async function sendPasswordAuthRequest(action, email, password, signal) {
-  if (!firebaseApiKey) {
-    throw new Error(authConfigurationError)
-  }
-
-  const response = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:${action}?key=${encodeURIComponent(firebaseApiKey)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, returnSecureToken: true }),
-      signal,
-    },
-  )
-
+async function readAuthResponse(response) {
   let responseData
 
   try {
@@ -42,10 +28,50 @@ async function sendPasswordAuthRequest(action, email, password, signal) {
   return responseData
 }
 
+async function sendPasswordAuthRequest(action, email, password, signal) {
+  if (!firebaseApiKey) {
+    throw new Error(authConfigurationError)
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:${action}?key=${encodeURIComponent(firebaseApiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, returnSecureToken: true }),
+      signal,
+    },
+  )
+
+  return readAuthResponse(response)
+}
+
 export function createFirebaseAccount(email, password, signal) {
   return sendPasswordAuthRequest('signUp', email, password, signal)
 }
 
 export function signInFirebaseAccount(email, password, signal) {
   return sendPasswordAuthRequest('signInWithPassword', email, password, signal)
+}
+
+export async function changeFirebasePassword(idToken, newPassword, signal) {
+  if (!firebaseApiKey) {
+    throw new Error(authConfigurationError)
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${encodeURIComponent(firebaseApiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idToken,
+        password: newPassword,
+        returnSecureToken: true,
+      }),
+      signal,
+    },
+  )
+
+  return readAuthResponse(response)
 }
