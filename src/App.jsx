@@ -6,23 +6,36 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import MoviesPage from './pages/MoviesPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import ProfilePage from './pages/ProfilePage'
 import SignUpPage from './pages/SignUpPage'
 import StorePage from './pages/StorePage'
+import useAuth from './hooks/useAuth'
 import './App.css'
 
 function App() {
+  const { isLoggedIn } = useAuth()
+
   return (
     <Layout>
       <Switch>
-        <Route path={['/', '/index.html']} exact component={HomePage} />
-        <Route path="/store" exact component={StorePage} />
-        <Route path={['/about', '/about.html']} exact component={AboutPage} />
-        <Route path="/contact-us" exact component={ContactPage} />
-        <Route path="/movies" exact component={MoviesPage} />
-        <Route path="/products/:productId" exact component={ProductDetailPage} />
-        <Route path="/login" exact component={LoginPage} />
-        <Route path="/signup" exact component={SignUpPage} />
-        <Redirect to="/" />
+        {!isLoggedIn && <Route path="/login" exact component={LoginPage} />}
+        {!isLoggedIn && <Route path="/signup" exact component={SignUpPage} />}
+
+        {isLoggedIn && (
+          <Route path={['/', '/index.html']} exact component={HomePage} />
+        )}
+        {isLoggedIn && <Route path="/store" exact component={StorePage} />}
+        {isLoggedIn && (
+          <Route path={['/about', '/about.html']} exact component={AboutPage} />
+        )}
+        {isLoggedIn && <Route path="/contact-us" exact component={ContactPage} />}
+        {isLoggedIn && <Route path="/movies" exact component={MoviesPage} />}
+        {isLoggedIn && (
+          <Route path="/products/:productId" exact component={ProductDetailPage} />
+        )}
+        {isLoggedIn && <Route path="/profile" exact component={ProfilePage} />}
+
+        <Redirect to={isLoggedIn ? '/' : '/login'} />
       </Switch>
     </Layout>
   )

@@ -1,15 +1,24 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { MonitorPlay, Music2, Play, Share2, ShoppingCart } from 'lucide-react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useHistory, useLocation } from 'react-router-dom'
 import Cart from './Cart'
+import useAuth from '../hooks/useAuth'
 import useCart from '../hooks/useCart'
 
 function Layout({ children }) {
   const [showCart, setShowCart] = useState(false)
+  const { isLoggedIn, logout } = useAuth()
   const { cartQuantity } = useCart()
+  const history = useHistory()
   const location = useLocation()
   const isHomePage = location.pathname === '/' || location.pathname === '/index.html'
+
+  const handleLogout = useCallback(() => {
+    setShowCart(false)
+    logout()
+    history.replace('/login')
+  }, [history, logout])
 
   return (
     <div className="store-page">
@@ -21,50 +30,62 @@ function Layout({ children }) {
           <Navbar.Toggle aria-controls="store-navigation" />
           <Navbar.Collapse id="store-navigation">
             <Nav className="mx-auto">
-              <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
-                Home
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/store" activeClassName="active">
-                Store
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
-                About
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
-                Contact Us
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/movies" activeClassName="active">
-                Movies
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/login" activeClassName="active">
-                Login
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/signup" activeClassName="active">
-                Sign Up
-              </Nav.Link>
+              {isLoggedIn ? (
+                <>
+                  <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
+                    Home
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/store" activeClassName="active">
+                    Store
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
+                    About
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
+                    Contact Us
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/movies" activeClassName="active">
+                    Movies
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/profile" activeClassName="active">
+                    Profile
+                  </Nav.Link>
+                </>
+              ) : (
+                <Nav.Link as={NavLink} to="/login" activeClassName="active">
+                  Login
+                </Nav.Link>
+              )}
             </Nav>
-            <Button
-              aria-label="Open cart"
-              variant="outline-light"
-              className="cart-preview"
-              onClick={() => setShowCart(true)}
-            >
-              <ShoppingCart size={18} aria-hidden="true" />
-              <span>Cart</span>
-              <Badge bg="light" text="dark">
-                {cartQuantity}
-              </Badge>
-            </Button>
+            {isLoggedIn && (
+              <div className="account-actions">
+                <Button
+                  aria-label="Open cart"
+                  variant="outline-light"
+                  className="cart-preview"
+                  onClick={() => setShowCart(true)}
+                >
+                  <ShoppingCart size={18} aria-hidden="true" />
+                  <span>Cart</span>
+                  <Badge bg="light" text="dark">
+                    {cartQuantity}
+                  </Badge>
+                </Button>
+                <Button variant="outline-light" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
+            )}
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      <Cart onClose={() => setShowCart(false)} show={showCart} />
+      {isLoggedIn && <Cart onClose={() => setShowCart(false)} show={showCart} />}
 
       <header className="store-header">
         <Container>
           <h1>The Generics</h1>
-          {isHomePage && (
+          {isLoggedIn && isHomePage && (
             <div className="home-hero-actions">
               <Button variant="outline-light" className="latest-album-button">
                 Get our Latest Album

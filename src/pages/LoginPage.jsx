@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Button, Container, Form, Spinner } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { signInFirebaseAccount } from '../api/auth'
+import useAuth from '../hooks/useAuth'
 
 function LoginPage() {
+  const { login } = useAuth()
+  const history = useHistory()
   const [isLoading, setIsLoading] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
   const requestControllerRef = useRef(null)
@@ -25,7 +28,8 @@ function LoginPage() {
       const responseData = await signInFirebaseAccount(email, password, controller.signal)
 
       console.log(responseData.idToken)
-      setFeedback({ type: 'success', message: 'You have logged in successfully.' })
+      login(responseData.idToken)
+      history.replace('/profile')
     } catch (error) {
       if (error.name !== 'AbortError') {
         setFeedback({
@@ -39,7 +43,7 @@ function LoginPage() {
         setIsLoading(false)
       }
     }
-  }, [])
+  }, [history, login])
 
   useEffect(() => () => requestControllerRef.current?.abort(), [])
 
