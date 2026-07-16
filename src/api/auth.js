@@ -5,13 +5,20 @@ const firebaseApiKey = configuredApiKey?.includes('YOUR_FIREBASE') ? '' : config
 export const authConfigurationError =
   'Add your Firebase Web API key to VITE_FIREBASE_WEB_API_KEY in .env.'
 
-export async function createFirebaseAccount(email, password, signal) {
+export class FirebaseAuthError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'FirebaseAuthError'
+  }
+}
+
+async function sendPasswordAuthRequest(action, email, password, signal) {
   if (!firebaseApiKey) {
     throw new Error(authConfigurationError)
   }
 
   const response = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${encodeURIComponent(firebaseApiKey)}`,
+    `https://identitytoolkit.googleapis.com/v1/accounts:${action}?key=${encodeURIComponent(firebaseApiKey)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -29,8 +36,16 @@ export async function createFirebaseAccount(email, password, signal) {
   }
 
   if (!response.ok) {
-    throw new Error(responseData?.error?.message || 'Authentication failed.')
+    throw new FirebaseAuthError(responseData?.error?.message || 'Authentication failed.')
   }
 
   return responseData
+}
+
+export function createFirebaseAccount(email, password, signal) {
+  return sendPasswordAuthRequest('signUp', email, password, signal)
+}
+
+export function signInFirebaseAccount(email, password, signal) {
+  return sendPasswordAuthRequest('signInWithPassword', email, password, signal)
 }

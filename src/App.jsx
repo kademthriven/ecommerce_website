@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import HomePage from './pages/HomePage'
+import LoginPage from './pages/LoginPage'
 import MoviesPage from './pages/MoviesPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import SignUpPage from './pages/SignUpPage'
@@ -19,6 +20,7 @@ function App() {
         <Route path="/contact-us" exact component={ContactPage} />
         <Route path="/movies" exact component={MoviesPage} />
         <Route path="/products/:productId" exact component={ProductDetailPage} />
+        <Route path="/login" exact component={LoginPage} />
         <Route path="/signup" exact component={SignUpPage} />
         <Redirect to="/" />
       </Switch>

@@ -36,6 +36,9 @@ function Layout({ children }) {
               <Nav.Link as={NavLink} to="/movies" activeClassName="active">
                 Movies
               </Nav.Link>
+              <Nav.Link as={NavLink} to="/login" activeClassName="active">
+                Login
+              </Nav.Link>
               <Nav.Link as={NavLink} to="/signup" activeClassName="active">
                 Sign Up
               </Nav.Link>

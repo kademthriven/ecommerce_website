@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Button, Container, Form, Spinner } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { createFirebaseAccount } from '../api/auth'
+import { signInFirebaseAccount } from '../api/auth'
 
-function SignUpPage() {
+function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
   const requestControllerRef = useRef(null)
@@ -11,8 +11,7 @@ function SignUpPage() {
   const handleSubmit = useCallback(async (event) => {
     event.preventDefault()
 
-    const form = event.currentTarget
-    const formData = new FormData(form)
+    const formData = new FormData(event.currentTarget)
     const email = formData.get('email').trim()
     const password = formData.get('password')
     const controller = new AbortController()
@@ -23,15 +22,16 @@ function SignUpPage() {
     setIsLoading(true)
 
     try {
-      await createFirebaseAccount(email, password, controller.signal)
-      form.reset()
-      setFeedback({
-        type: 'success',
-        message: 'Your account was created successfully.',
-      })
+      const responseData = await signInFirebaseAccount(email, password, controller.signal)
+
+      console.log(responseData.idToken)
+      setFeedback({ type: 'success', message: 'You have logged in successfully.' })
     } catch (error) {
       if (error.name !== 'AbortError') {
-        setFeedback({ type: 'danger', message: error.message })
+        setFeedback({
+          type: 'danger',
+          message: error.name === 'FirebaseAuthError' ? 'Authentication failed.' : error.message,
+        })
       }
     } finally {
       if (requestControllerRef.current === controller) {
@@ -46,14 +46,14 @@ function SignUpPage() {
   return (
     <main className="auth-section">
       <Container>
-        <section className="auth-card" aria-labelledby="signup-title">
+        <section className="auth-card" aria-labelledby="login-title">
           <div className="section-heading auth-heading">
-            <p className="text-uppercase fw-semibold">Join The Generics</p>
-            <h2 id="signup-title">Sign Up</h2>
+            <p className="text-uppercase fw-semibold">Welcome back</p>
+            <h2 id="login-title">Login</h2>
           </div>
 
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="signup-email">
+            <Form.Group className="mb-3" controlId="login-email">
               <Form.Label>Email</Form.Label>
               <Form.Control
                 name="email"
@@ -64,12 +64,12 @@ function SignUpPage() {
               />
             </Form.Group>
 
-            <Form.Group className="mb-4" controlId="signup-password">
+            <Form.Group className="mb-4" controlId="login-password">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 name="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 disabled={isLoading}
                 required
               />
@@ -82,7 +82,7 @@ function SignUpPage() {
                   <span>Sending request...</span>
                 </>
               ) : (
-                'Sign Up'
+                'Login'
               )}
             </Button>
 
@@ -93,7 +93,7 @@ function SignUpPage() {
             )}
 
             <p className="auth-switch-copy">
-              Already have an account? <Link to="/login">Login</Link>
+              Need an account? <Link to="/signup">Sign up</Link>
             </p>
           </Form>
         </section>
@@ -102,4 +102,4 @@ function SignUpPage() {
   )
 }
 
-export default SignUpPage
+export default LoginPage
