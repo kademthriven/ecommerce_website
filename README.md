@@ -1,5 +1,17 @@
 # React + Vite
 
+## Movie database setup
+
+The Movies page uses the Firebase Realtime Database REST API. Create a `.env.local`
+file beside `package.json` and add your database URL:
+
+```env
+VITE_FIREBASE_DATABASE_URL=https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com
+```
+
+Firebase must allow the app to read and write the `/movies` collection. Restart the
+Vite development server after creating or changing `.env.local`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

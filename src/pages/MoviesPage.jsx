@@ -1,22 +1,46 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
 
-const filmsUrl = 'https://swapi.info/api/films'
-const retryErrorMessage = 'Something went wrong ....Retrying'
+const databaseUrl = import.meta.env.VITE_FIREBASE_DATABASE_URL?.replace(/\/+$/, '')
+const moviesUrl = databaseUrl ? `${databaseUrl}/movies.json` : ''
+const configurationError =
+  'Add VITE_FIREBASE_DATABASE_URL to .env.local before using the movie database.'
 
-const AddMovieForm = memo(function AddMovieForm() {
-  const handleSubmit = useCallback((event) => {
-    event.preventDefault()
+function getRequestError(action, response) {
+  return response.statusText
+    ? `Could not ${action} the movie: ${response.statusText}`
+    : `Could not ${action} the movie.`
+}
 
-    const formData = new FormData(event.currentTarget)
-    const NewMovieObj = {
-      title: formData.get('title'),
-      openingText: formData.get('openingText'),
-      releaseDate: formData.get('releaseDate'),
-    }
+const AddMovieForm = memo(function AddMovieForm({ onAddMovie }) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-    console.log(NewMovieObj)
-  }, [])
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault()
+
+      const form = event.currentTarget
+      const formData = new FormData(form)
+      const NewMovieObj = {
+        title: formData.get('title').trim(),
+        openingText: formData.get('openingText').trim(),
+        releaseDate: formData.get('releaseDate'),
+      }
+
+      console.log(NewMovieObj)
+      setIsSubmitting(true)
+
+      try {
+        await onAddMovie(NewMovieObj)
+        form.reset()
+      } catch {
+        // The page displays the request error while preserving the entered values.
+      } finally {
+        setIsSubmitting(false)
+      }
+    },
+    [onAddMovie],
+  )
 
   return (
     <Form className="add-movie-form" onSubmit={handleSubmit}>
@@ -35,33 +59,32 @@ const AddMovieForm = memo(function AddMovieForm() {
         <Form.Control name="releaseDate" type="date" required />
       </Form.Group>
 
-      <Button className="add-movie-button" type="submit">
-        Add Movie
+      <Button className="add-movie-button" type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Saving...' : 'Add Movie'}
       </Button>
     </Form>
   )
 })
 
-const MovieCard = memo(function MovieCard({ film }) {
+const MovieCard = memo(function MovieCard({ film, isDeleting, onDelete }) {
+  const handleDelete = useCallback(() => onDelete(film.id), [film.id, onDelete])
+
   return (
     <Col md={6} xl={4}>
       <Card className="movie-card h-100">
-        <Card.Body>
-          <Card.Subtitle className="mb-2 text-info fw-bold">
-            Episode {film.episode_id}
-          </Card.Subtitle>
+        <Card.Body className="d-flex flex-column">
           <Card.Title>{film.title}</Card.Title>
-          <Card.Text>
-            Directed by {film.director}. Released on {film.release_date}.
+          <Card.Text className="movie-opening-text">{film.openingText}</Card.Text>
+          <Card.Text className="mt-auto mb-3">
+            <strong>Released:</strong> {film.releaseDate}
           </Card.Text>
           <Button
-            as="a"
-            href={film.url}
-            target="_blank"
-            rel="noreferrer"
-            variant="outline-info"
+            variant="outline-danger"
+            className="delete-movie-button"
+            disabled={isDeleting}
+            onClick={handleDelete}
           >
-            View API
+            {isDeleting ? 'Deleting...' : 'Delete Movie'}
           </Button>
         </Card.Body>
       </Card>
@@ -71,67 +94,126 @@ const MovieCard = memo(function MovieCard({ film }) {
 
 function MoviesPage() {
   const [films, setFilms] = useState([])
-  const [error, setError] = useState('')
+  const [fetchError, setFetchError] = useState('')
+  const [mutationError, setMutationError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [deletingMovieIds, setDeletingMovieIds] = useState(() => new Set())
   const abortControllerRef = useRef(null)
-  const retryTimeoutRef = useRef(null)
-  const shouldRetryRef = useRef(false)
 
-  const cancelRetry = useCallback(() => {
-    shouldRetryRef.current = false
-    clearTimeout(retryTimeoutRef.current)
+  const fetchFilms = useCallback(async () => {
+    if (!moviesUrl) {
+      setFetchError(configurationError)
+      return
+    }
+
     abortControllerRef.current?.abort()
-    setIsLoading(false)
-    setError('')
-  }, [])
-
-  const fetchFilmsWithRetry = useCallback(async function fetchWithRetry() {
-    abortControllerRef.current = new AbortController()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    setIsLoading(true)
+    setFetchError('')
 
     try {
-      const response = await fetch(filmsUrl, {
-        signal: abortControllerRef.current.signal,
-      })
+      const response = await fetch(moviesUrl, { signal: controller.signal })
 
       if (!response.ok) {
-        throw new Error(retryErrorMessage)
+        throw new Error(getRequestError('fetch', response))
       }
 
       const data = await response.json()
-      setFilms(data)
-      setError('')
-      setIsLoading(false)
-      shouldRetryRef.current = false
-    } catch (fetchError) {
-      if (!shouldRetryRef.current || fetchError.name === 'AbortError') {
-        return
-      }
+      const loadedFilms = Object.entries(data ?? {}).map(([id, film]) => ({
+        id,
+        title: film.title,
+        openingText: film.openingText,
+        releaseDate: film.releaseDate,
+      }))
 
-      setError(retryErrorMessage)
-      setFilms([])
-      retryTimeoutRef.current = setTimeout(fetchWithRetry, 5000)
+      setFilms(loadedFilms)
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        setFetchError(error.message)
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        setIsLoading(false)
+      }
     }
   }, [])
 
-  const fetchFilms = useCallback(() => {
-    clearTimeout(retryTimeoutRef.current)
-    shouldRetryRef.current = true
-    setIsLoading(true)
-    setError('')
-    void fetchFilmsWithRetry()
-  }, [fetchFilmsWithRetry])
+  const addMovie = useCallback(async (newMovie) => {
+    setMutationError('')
+
+    try {
+      if (!moviesUrl) {
+        throw new Error(configurationError)
+      }
+
+      const response = await fetch(moviesUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMovie),
+      })
+
+      if (!response.ok) {
+        throw new Error(getRequestError('save', response))
+      }
+
+      const data = await response.json()
+
+      if (!data.name) {
+        throw new Error('The database did not return an ID for the new movie.')
+      }
+
+      setFilms((currentFilms) => [...currentFilms, { id: data.name, ...newMovie }])
+    } catch (error) {
+      setMutationError(error.message)
+      throw error
+    }
+  }, [])
+
+  const deleteMovie = useCallback(async (movieId) => {
+    setMutationError('')
+    setDeletingMovieIds((currentIds) => new Set(currentIds).add(movieId))
+
+    try {
+      if (!databaseUrl) {
+        throw new Error(configurationError)
+      }
+
+      const response = await fetch(`${databaseUrl}/movies/${encodeURIComponent(movieId)}.json`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(getRequestError('delete', response))
+      }
+
+      setFilms((currentFilms) => currentFilms.filter((film) => film.id !== movieId))
+    } catch (error) {
+      setMutationError(error.message)
+    } finally {
+      setDeletingMovieIds((currentIds) => {
+        const nextIds = new Set(currentIds)
+        nextIds.delete(movieId)
+        return nextIds
+      })
+    }
+  }, [])
 
   const orderedFilms = useMemo(
-    () => [...films].sort((firstFilm, secondFilm) => firstFilm.episode_id - secondFilm.episode_id),
+    () =>
+      [...films].sort(
+        (firstFilm, secondFilm) =>
+          firstFilm.releaseDate.localeCompare(secondFilm.releaseDate) ||
+          firstFilm.title.localeCompare(secondFilm.title),
+      ),
     [films],
   )
 
   useEffect(() => {
-    fetchFilms()
+    const initialFetchTimeout = setTimeout(() => void fetchFilms(), 0)
 
     return () => {
-      shouldRetryRef.current = false
-      clearTimeout(retryTimeoutRef.current)
+      clearTimeout(initialFetchTimeout)
       abortControllerRef.current?.abort()
     }
   }, [fetchFilms])
@@ -140,11 +222,17 @@ function MoviesPage() {
     <main className="movies-section">
       <Container>
         <div className="section-heading">
-          <p className="text-uppercase fw-semibold">Fetch API</p>
-          <h2>Star Wars Films</h2>
+          <p className="text-uppercase fw-semibold">Movie Database</p>
+          <h2>Movies</h2>
         </div>
 
-        <AddMovieForm />
+        <AddMovieForm onAddMovie={addMovie} />
+
+        {mutationError && (
+          <Alert variant="danger" className="movie-alert" dismissible onClose={() => setMutationError('')}>
+            {mutationError}
+          </Alert>
+        )}
 
         <div className="fetch-actions">
           <Button
@@ -160,26 +248,32 @@ function MoviesPage() {
         {isLoading && (
           <div className="loading-state">
             <Spinner animation="border" variant="info" />
-            <span>Loading films...</span>
+            <span>Loading movies...</span>
           </div>
         )}
 
-        {error && (
-          <Alert
-            variant="danger"
-            className="retry-alert"
-          >
-            <span>{error}</span>
-            <Button variant="outline-danger" size="sm" onClick={cancelRetry}>
-              Cancel
+        {fetchError && (
+          <Alert variant="danger" className="movie-alert">
+            <span>{fetchError}</span>
+            <Button variant="outline-danger" size="sm" onClick={fetchFilms}>
+              Retry
             </Button>
           </Alert>
         )}
 
-        {!isLoading && !error && orderedFilms.length > 0 && (
+        {!isLoading && !fetchError && orderedFilms.length === 0 && (
+          <p className="empty-movies-message">No movies have been added yet.</p>
+        )}
+
+        {!isLoading && !fetchError && orderedFilms.length > 0 && (
           <Row className="g-4">
             {orderedFilms.map((film) => (
-              <MovieCard key={film.url} film={film} />
+              <MovieCard
+                key={film.id}
+                film={film}
+                isDeleting={deletingMovieIds.has(film.id)}
+                onDelete={deleteMovie}
+              />
             ))}
           </Row>
         )}

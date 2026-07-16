@@ -247,7 +247,8 @@
   font-weight: 700;
 }
 
-.retry-alert {
+.retry-alert,
+.movie-alert {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -270,6 +271,25 @@
 
 .movie-card .card-text {
   color: #4b5563;
+}
+
+.movie-opening-text {
+  white-space: pre-line;
+}
+
+.delete-movie-button {
+  align-self: flex-start;
+}
+
+.empty-movies-message {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #5f6b76;
+  text-align: center;
+  border: 1px dashed #b8c2cc;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 .about-content {
@@ -465,7 +485,8 @@
     margin-top: 0.5rem;
   }
 
-  .retry-alert {
+  .retry-alert,
+  .movie-alert {
     align-items: stretch;
     flex-direction: column;
     text-align: center;
