@@ -74,6 +74,7 @@
 
 .home-section,
 .movies-section,
+.contact-section,
 .products-section {
   padding: 3.5rem 0 4.5rem;
 }
@@ -292,6 +293,50 @@
   background: #ffffff;
 }
 
+.contact-form {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.12);
+}
+
+.contact-form .form-label {
+  color: #222831;
+  font-weight: 700;
+}
+
+.contact-form .form-control {
+  border-color: #d7dee6;
+  border-radius: 10px;
+}
+
+.contact-form .form-control:focus {
+  border-color: #2d9cdb;
+  box-shadow: 0 0 0 0.2rem rgba(45, 156, 219, 0.2);
+}
+
+.contact-submit-button {
+  display: block;
+  min-width: 150px;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 999px;
+  background: #2d9cdb;
+}
+
+.contact-submit-button:hover,
+.contact-submit-button:focus-visible,
+.contact-submit-button:active {
+  background: #1d7fb5 !important;
+}
+
+.contact-feedback {
+  margin: 1.5rem 0 0;
+  text-align: center;
+}
+
 .about-content {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -455,6 +500,7 @@
 
   .home-section,
   .movies-section,
+  .contact-section,
   .products-section {
     padding: 2.5rem 0 3.25rem;
   }

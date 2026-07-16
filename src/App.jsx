@@ -1,6 +1,7 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Redirect, Route, Switch } from 'react-router-dom'
 import Layout from './components/Layout'
 import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
 import HomePage from './pages/HomePage'
 import MoviesPage from './pages/MoviesPage'
 import StorePage from './pages/StorePage'
@@ -8,17 +9,16 @@ import './App.css'
 
 function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="index.html" element={<HomePage />} />
-        <Route path="store" element={<StorePage />} />
-        <Route path="about.html" element={<AboutPage />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="movies" element={<MoviesPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <Layout>
+      <Switch>
+        <Route path={['/', '/index.html']} exact component={HomePage} />
+        <Route path="/store" exact component={StorePage} />
+        <Route path={['/about', '/about.html']} exact component={AboutPage} />
+        <Route path="/contact-us" exact component={ContactPage} />
+        <Route path="/movies" exact component={MoviesPage} />
+        <Redirect to="/" />
+      </Switch>
+    </Layout>
   )
 }
 

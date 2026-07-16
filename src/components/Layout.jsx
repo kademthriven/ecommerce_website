@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { MonitorPlay, Music2, Play, Share2, ShoppingCart } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import Cart from './Cart'
 import useCart from '../hooks/useCart'
 
-function Layout() {
+function Layout({ children }) {
   const [showCart, setShowCart] = useState(false)
   const { cartQuantity } = useCart()
   const location = useLocation()
@@ -21,16 +21,19 @@ function Layout() {
           <Navbar.Toggle aria-controls="store-navigation" />
           <Navbar.Collapse id="store-navigation">
             <Nav className="mx-auto">
-              <Nav.Link as={NavLink} to="/index.html">
+              <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
                 Home
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/store">
+              <Nav.Link as={NavLink} to="/store" activeClassName="active">
                 Store
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/about.html">
+              <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
                 About
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/movies">
+              <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
+                Contact Us
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/movies" activeClassName="active">
                 Movies
               </Nav.Link>
             </Nav>
@@ -72,7 +75,7 @@ function Layout() {
         </Container>
       </header>
 
-      <Outlet />
+      {children}
 
       <footer className="store-footer">
         <Container className="footer-content">

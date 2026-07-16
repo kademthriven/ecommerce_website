@@ -1,16 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
+import {
+  databaseUrl,
+  firebaseConfigurationError,
+  getFirebaseRequestError,
+  getFirebaseUrl,
+} from '../api/firebase'
 
-const databaseUrl = import.meta.env.VITE_FIREBASE_DATABASE_URL?.replace(/\/+$/, '')
-const moviesUrl = databaseUrl ? `${databaseUrl}/movies.json` : ''
-const configurationError =
-  'Add VITE_FIREBASE_DATABASE_URL to .env.local before using the movie database.'
-
-function getRequestError(action, response) {
-  return response.statusText
-    ? `Could not ${action} the movie: ${response.statusText}`
-    : `Could not ${action} the movie.`
-}
+const moviesUrl = databaseUrl ? getFirebaseUrl('movies') : ''
 
 const AddMovieForm = memo(function AddMovieForm({ onAddMovie }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -102,7 +99,7 @@ function MoviesPage() {
 
   const fetchFilms = useCallback(async () => {
     if (!moviesUrl) {
-      setFetchError(configurationError)
+      setFetchError(firebaseConfigurationError)
       return
     }
 
@@ -116,7 +113,7 @@ function MoviesPage() {
       const response = await fetch(moviesUrl, { signal: controller.signal })
 
       if (!response.ok) {
-        throw new Error(getRequestError('fetch', response))
+        throw new Error(getFirebaseRequestError('fetch movies', response))
       }
 
       const data = await response.json()
@@ -144,7 +141,7 @@ function MoviesPage() {
 
     try {
       if (!moviesUrl) {
-        throw new Error(configurationError)
+        throw new Error(firebaseConfigurationError)
       }
 
       const response = await fetch(moviesUrl, {
@@ -154,7 +151,7 @@ function MoviesPage() {
       })
 
       if (!response.ok) {
-        throw new Error(getRequestError('save', response))
+        throw new Error(getFirebaseRequestError('save the movie', response))
       }
 
       const data = await response.json()
@@ -176,15 +173,15 @@ function MoviesPage() {
 
     try {
       if (!databaseUrl) {
-        throw new Error(configurationError)
+        throw new Error(firebaseConfigurationError)
       }
 
-      const response = await fetch(`${databaseUrl}/movies/${encodeURIComponent(movieId)}.json`, {
+      const response = await fetch(getFirebaseUrl(`movies/${encodeURIComponent(movieId)}`), {
         method: 'DELETE',
       })
 
       if (!response.ok) {
-        throw new Error(getRequestError('delete', response))
+        throw new Error(getFirebaseRequestError('delete the movie', response))
       }
 
       setFilms((currentFilms) => currentFilms.filter((film) => film.id !== movieId))
