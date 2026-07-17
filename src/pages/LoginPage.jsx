@@ -5,7 +5,7 @@ import { signInFirebaseAccount } from '../api/auth'
 import useAuth from '../hooks/useAuth'
 
 function LoginPage() {
-  const { login } = useAuth()
+  const { authNotice, login } = useAuth()
   const history = useHistory()
   const [isLoading, setIsLoading] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
@@ -27,7 +27,6 @@ function LoginPage() {
     try {
       const responseData = await signInFirebaseAccount(email, password, controller.signal)
 
-      console.log(responseData.idToken)
       login(responseData.idToken)
       history.replace('/profile')
     } catch (error) {
@@ -55,6 +54,12 @@ function LoginPage() {
             <p className="text-uppercase fw-semibold">Welcome back</p>
             <h2 id="login-title">Login</h2>
           </div>
+
+          {authNotice && (
+            <Alert className="auth-feedback" variant="warning" aria-live="polite">
+              {authNotice}
+            </Alert>
+          )}
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="login-email">
