@@ -36,11 +36,15 @@ function App() {
         {!isLoggedIn && <Route path="/login" exact component={LoginPage} />}
 
         <Route path={['/', '/index.html']} exact component={HomePage} />
-        <Route path="/store" exact component={StorePage} />
         <Route path={['/about', '/about.html']} exact component={AboutPage} />
         <Route path="/contact-us" exact component={ContactPage} />
         <Route path="/movies" exact component={MoviesPage} />
-        <Route path="/products/:productId" exact component={ProductDetailPage} />
+        {isLoggedIn && <Route path="/store" exact component={StorePage} />}
+        {isLoggedIn && (
+          <Route path="/products/:productId" exact component={ProductDetailPage} />
+        )}
+        {!isLoggedIn && <Redirect from="/store" to="/login" />}
+        {!isLoggedIn && <Redirect from="/products/:productId" to="/login" />}
         {isLoggedIn && <Route path="/profile" exact component={ProfilePage} />}
 
         <Redirect to="/" />

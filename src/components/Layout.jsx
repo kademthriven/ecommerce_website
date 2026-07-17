@@ -33,8 +33,12 @@ function Layout({ children }) {
               <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
                 Home
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/store" activeClassName="active">
-                Store
+              <Nav.Link
+                as={NavLink}
+                to={isLoggedIn ? '/store' : '/login'}
+                activeClassName="active"
+              >
+                Products
               </Nav.Link>
               <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
                 About
