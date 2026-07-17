@@ -57,6 +57,7 @@ function removeStoredSession() {
 function AuthProvider({ children }) {
   const [initialSession] = useState(getStoredSession)
   const [token, setToken] = useState(null)
+  const [userEmail, setUserEmail] = useState(null)
   const [expirationTime, setExpirationTime] = useState(
     initialSession?.expirationTime ?? null,
   )
@@ -76,11 +77,13 @@ function AuthProvider({ children }) {
 
     async function validateStoredToken() {
       try {
-        await validateFirebaseToken(initialSession.token, controller.signal)
+        const accountData = await validateFirebaseToken(initialSession.token, controller.signal)
+        const email = accountData.users?.[0]?.email
 
         if (isActive) {
-          if (initialSession.expirationTime > Date.now()) {
+          if (initialSession.expirationTime > Date.now() && email) {
             setToken(initialSession.token)
+            setUserEmail(email)
           } else {
             removeStoredSession()
             setExpirationTime(null)
@@ -91,6 +94,7 @@ function AuthProvider({ children }) {
         if (isActive && error.name !== 'AbortError') {
           removeStoredSession()
           setToken(null)
+          setUserEmail(null)
           setExpirationTime(null)
           setAuthNotice('Your session could not be verified. Please log in again.')
         }
@@ -109,11 +113,12 @@ function AuthProvider({ children }) {
     }
   }, [initialSession])
 
-  const login = useCallback((idToken) => {
+  const login = useCallback((idToken, email) => {
     const newExpirationTime = Date.now() + SESSION_DURATION_MS
 
     storeSession(idToken, newExpirationTime)
     setToken(idToken)
+    setUserEmail(email || null)
     setExpirationTime(newExpirationTime)
     setAuthNotice('')
     setIsAuthLoading(false)
@@ -122,6 +127,7 @@ function AuthProvider({ children }) {
   const logout = useCallback(() => {
     removeStoredSession()
     setToken(null)
+    setUserEmail(null)
     setExpirationTime(null)
     setAuthNotice('')
     setIsAuthLoading(false)
@@ -130,6 +136,7 @@ function AuthProvider({ children }) {
   const expireSession = useCallback(() => {
     removeStoredSession()
     setToken(null)
+    setUserEmail(null)
     setExpirationTime(null)
     setAuthNotice(SESSION_EXPIRED_MESSAGE)
     setIsAuthLoading(false)
@@ -154,8 +161,9 @@ function AuthProvider({ children }) {
       login,
       logout,
       token,
+      userEmail,
     }),
-    [authNotice, isAuthLoading, login, logout, token],
+    [authNotice, isAuthLoading, login, logout, token, userEmail],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

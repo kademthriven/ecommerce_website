@@ -30,7 +30,7 @@ function ProfilePage() {
           controller.signal,
         )
 
-        login(responseData.idToken)
+        login(responseData.idToken, responseData.email)
         form.reset()
         setFeedback({
           type: 'success',

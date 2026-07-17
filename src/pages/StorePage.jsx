@@ -1,10 +1,29 @@
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { useCallback, useState } from 'react'
+import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { products } from '../data/products'
 import useCart from '../hooks/useCart'
 
 function StorePage() {
   const { addItemToCart } = useCart()
+  const [addingProductId, setAddingProductId] = useState('')
+  const [feedback, setFeedback] = useState('')
+
+  const handleAddToCart = useCallback(
+    async (product) => {
+      setAddingProductId(product.id)
+      setFeedback('')
+
+      try {
+        await addItemToCart(product)
+      } catch (error) {
+        setFeedback(error.message)
+      } finally {
+        setAddingProductId('')
+      }
+    },
+    [addItemToCart],
+  )
 
   return (
     <main className="products-section">
@@ -13,6 +32,8 @@ function StorePage() {
           <p className="text-uppercase fw-semibold">Music</p>
           <h2>Featured Albums</h2>
         </div>
+
+        {feedback && <Alert variant="danger">{feedback}</Alert>}
 
         <Row className="g-4 justify-content-center">
           {products.map((product) => (
@@ -30,9 +51,10 @@ function StorePage() {
                     <Button
                       variant="info"
                       className="text-white fw-semibold"
-                      onClick={() => addItemToCart(product)}
+                      disabled={addingProductId === product.id}
+                      onClick={() => handleAddToCart(product)}
                     >
-                      Add to Cart
+                      {addingProductId === product.id ? 'Adding...' : 'Add to Cart'}
                     </Button>
                   </div>
                 </Card.Body>

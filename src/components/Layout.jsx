@@ -9,7 +9,7 @@ import useCart from '../hooks/useCart'
 function Layout({ children }) {
   const [showCart, setShowCart] = useState(false)
   const { isLoggedIn, logout } = useAuth()
-  const { cartQuantity } = useCart()
+  const { cartQuantity, loadCartItems } = useCart()
   const history = useHistory()
   const location = useLocation()
   const isHomePage = location.pathname === '/' || location.pathname === '/index.html'
@@ -19,6 +19,16 @@ function Layout({ children }) {
     logout()
     history.replace('/login')
   }, [history, logout])
+
+  const handleOpenCart = useCallback(async () => {
+    setShowCart(true)
+
+    try {
+      await loadCartItems()
+    } catch {
+      // Cart displays the request error in the panel.
+    }
+  }, [loadCartItems])
 
   return (
     <div className="store-page">
@@ -66,7 +76,7 @@ function Layout({ children }) {
                   aria-label="Open cart"
                   variant="outline-light"
                   className="cart-preview"
-                  onClick={() => setShowCart(true)}
+                  onClick={handleOpenCart}
                 >
                   <ShoppingCart size={18} aria-hidden="true" />
                   <span>Cart</span>

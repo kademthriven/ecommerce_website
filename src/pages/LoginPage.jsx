@@ -27,7 +27,7 @@ function LoginPage() {
     try {
       const responseData = await signInFirebaseAccount(email, password, controller.signal)
 
-      login(responseData.idToken)
+      login(responseData.idToken, responseData.email)
       history.replace('/store')
     } catch (error) {
       if (error.name !== 'AbortError') {

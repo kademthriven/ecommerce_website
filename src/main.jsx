@@ -3,17 +3,14 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
-import App from './App.jsx'
+import AppWithCart from './components/AppWithCart.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
-import CartProvider from './context/CartProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <CartProvider>
-          <App />
-        </CartProvider>
+        <AppWithCart />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

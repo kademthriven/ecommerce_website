@@ -1,9 +1,32 @@
-import { Button, Image, Offcanvas, Table } from 'react-bootstrap'
+import { useCallback, useState } from 'react'
+import { Alert, Button, Image, Offcanvas, Spinner, Table } from 'react-bootstrap'
 import { Trash2 } from 'lucide-react'
 import useCart from '../hooks/useCart'
 
 function Cart({ onClose, show }) {
-  const { cartItems, cartTotal, removeItemFromCart } = useCart()
+  const {
+    cartError,
+    cartItems,
+    cartTotal,
+    isCartLoading,
+    removeItemFromCart,
+  } = useCart()
+  const [removingItem, setRemovingItem] = useState('')
+
+  const handleRemoveItem = useCallback(
+    async (itemKey) => {
+      setRemovingItem(itemKey)
+
+      try {
+        await removeItemFromCart(itemKey)
+      } catch {
+        // Cart displays the request error in the panel.
+      } finally {
+        setRemovingItem('')
+      }
+    },
+    [removeItemFromCart],
+  )
 
   return (
     <Offcanvas show={show} onHide={onClose} placement="end" className="cart-panel">
@@ -12,7 +35,14 @@ function Cart({ onClose, show }) {
       </Offcanvas.Header>
 
       <Offcanvas.Body>
-        {cartItems.length > 0 ? (
+        {cartError && <Alert variant="danger">{cartError}</Alert>}
+
+        {isCartLoading && cartItems.length === 0 ? (
+          <div className="d-flex justify-content-center py-5" role="status">
+            <Spinner animation="border" aria-hidden="true" />
+            <span className="visually-hidden">Loading cart...</span>
+          </div>
+        ) : cartItems.length > 0 ? (
           <Table responsive borderless className="cart-table align-middle">
             <thead>
               <tr>
@@ -25,8 +55,11 @@ function Cart({ onClose, show }) {
               </tr>
             </thead>
             <tbody>
-              {cartItems.map((item) => (
-                <tr key={item.title}>
+              {cartItems.map((item) => {
+                const itemKey = item.productId || item.title
+
+                return (
+                <tr key={itemKey}>
                   <td>
                     <div className="cart-item">
                       <Image src={item.imageUrl} alt={item.title} rounded />
@@ -43,14 +76,16 @@ function Cart({ onClose, show }) {
                       variant="danger"
                       size="sm"
                       className="remove-btn"
-                      onClick={() => removeItemFromCart(item.title)}
+                      disabled={isCartLoading || removingItem === itemKey}
+                      onClick={() => handleRemoveItem(itemKey)}
                     >
                       <Trash2 size={16} aria-hidden="true" />
                       Remove
                     </Button>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </Table>
         ) : (
