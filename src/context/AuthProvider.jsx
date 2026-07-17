@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { validateFirebaseToken } from '../api/auth'
 import AuthContext from './authContext'
 
 const TOKEN_STORAGE_KEY = 'token'
@@ -32,26 +33,66 @@ function removeStoredToken() {
 }
 
 function AuthProvider({ children }) {
-  const [token, setToken] = useState(getStoredToken)
+  const [initialToken] = useState(getStoredToken)
+  const [token, setToken] = useState(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(Boolean(initialToken))
+
+  useEffect(() => {
+    if (!initialToken) {
+      return undefined
+    }
+
+    const controller = new AbortController()
+    let isActive = true
+
+    async function validateStoredToken() {
+      try {
+        await validateFirebaseToken(initialToken, controller.signal)
+
+        if (isActive) {
+          setToken(initialToken)
+        }
+      } catch (error) {
+        if (isActive && error.name !== 'AbortError') {
+          removeStoredToken()
+          setToken(null)
+        }
+      } finally {
+        if (isActive) {
+          setIsAuthLoading(false)
+        }
+      }
+    }
+
+    validateStoredToken()
+
+    return () => {
+      isActive = false
+      controller.abort()
+    }
+  }, [initialToken])
 
   const login = useCallback((idToken) => {
     storeToken(idToken)
     setToken(idToken)
+    setIsAuthLoading(false)
   }, [])
 
   const logout = useCallback(() => {
     removeStoredToken()
     setToken(null)
+    setIsAuthLoading(false)
   }, [])
 
   const value = useMemo(
     () => ({
       isLoggedIn: Boolean(token),
+      isAuthLoading,
       login,
       logout,
       token,
     }),
-    [login, logout, token],
+    [isAuthLoading, login, logout, token],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

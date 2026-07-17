@@ -13,7 +13,18 @@ import useAuth from './hooks/useAuth'
 import './App.css'
 
 function App() {
-  const { isLoggedIn } = useAuth()
+  const { isAuthLoading, isLoggedIn } = useAuth()
+
+  if (isAuthLoading) {
+    return (
+      <main
+        className="d-flex min-vh-100 align-items-center justify-content-center"
+        role="status"
+      >
+        Checking session...
+      </main>
+    )
+  }
 
   return (
     <Layout>

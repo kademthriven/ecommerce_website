@@ -54,6 +54,24 @@ export function signInFirebaseAccount(email, password, signal) {
   return sendPasswordAuthRequest('signInWithPassword', email, password, signal)
 }
 
+export async function validateFirebaseToken(idToken, signal) {
+  if (!firebaseApiKey) {
+    throw new Error(authConfigurationError)
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(firebaseApiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+      signal,
+    },
+  )
+
+  return readAuthResponse(response)
+}
+
 export async function changeFirebasePassword(idToken, newPassword, signal) {
   if (!firebaseApiKey) {
     throw new Error(authConfigurationError)
