@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Button, Container, Form, Spinner } from 'react-bootstrap'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { signInFirebaseAccount } from '../api/auth'
 import useAuth from '../hooks/useAuth'
 
@@ -28,7 +28,7 @@ function LoginPage() {
       const responseData = await signInFirebaseAccount(email, password, controller.signal)
 
       login(responseData.idToken)
-      history.replace('/profile')
+      history.replace('/store')
     } catch (error) {
       if (error.name !== 'AbortError') {
         setFeedback({
@@ -101,9 +101,6 @@ function LoginPage() {
               </Alert>
             )}
 
-            <p className="auth-switch-copy">
-              Need an account? <Link to="/signup">Sign up</Link>
-            </p>
           </Form>
         </section>
       </Container>

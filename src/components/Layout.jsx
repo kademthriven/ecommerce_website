@@ -30,30 +30,29 @@ function Layout({ children }) {
           <Navbar.Toggle aria-controls="store-navigation" />
           <Navbar.Collapse id="store-navigation">
             <Nav className="mx-auto">
-              {isLoggedIn ? (
-                <>
-                  <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
-                    Home
-                  </Nav.Link>
-                  <Nav.Link as={NavLink} to="/store" activeClassName="active">
-                    Store
-                  </Nav.Link>
-                  <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
-                    About
-                  </Nav.Link>
-                  <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
-                    Contact Us
-                  </Nav.Link>
-                  <Nav.Link as={NavLink} to="/movies" activeClassName="active">
-                    Movies
-                  </Nav.Link>
-                  <Nav.Link as={NavLink} to="/profile" activeClassName="active">
-                    Profile
-                  </Nav.Link>
-                </>
-              ) : (
+              <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
+                Home
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/store" activeClassName="active">
+                Store
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
+                About
+              </Nav.Link>
+              {!isLoggedIn && (
                 <Nav.Link as={NavLink} to="/login" activeClassName="active">
                   Login
+                </Nav.Link>
+              )}
+              <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
+                Contact Us
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/movies" activeClassName="active">
+                Movies
+              </Nav.Link>
+              {isLoggedIn && (
+                <Nav.Link as={NavLink} to="/profile" activeClassName="active">
+                  Profile
                 </Nav.Link>
               )}
             </Nav>
