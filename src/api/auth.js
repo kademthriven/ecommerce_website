@@ -46,8 +46,34 @@ async function sendPasswordAuthRequest(action, email, password, signal) {
   return readAuthResponse(response)
 }
 
-export function createFirebaseAccount(email, password, signal) {
-  return sendPasswordAuthRequest('signUp', email, password, signal)
+export async function createFirebaseAccount(email, password, displayName, signal) {
+  const account = await sendPasswordAuthRequest('signUp', email, password, signal)
+
+  if (!displayName) {
+    return account
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${encodeURIComponent(firebaseApiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        displayName,
+        idToken: account.idToken,
+        returnSecureToken: true,
+      }),
+      signal,
+    },
+  )
+  const profile = await readAuthResponse(response)
+
+  return {
+    ...account,
+    ...profile,
+    email: profile.email || account.email,
+    idToken: profile.idToken || account.idToken,
+  }
 }
 
 export function signInFirebaseAccount(email, password, signal) {

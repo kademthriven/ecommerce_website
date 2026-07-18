@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
-import { MonitorPlay, Music2, Play, Share2, ShoppingCart } from 'lucide-react'
+import { Globe, LogOut, ShoppingBag, ShoppingCart, UserRound } from 'lucide-react'
 import { NavLink, useHistory, useLocation } from 'react-router-dom'
 import Cart from './Cart'
 import useAuth from '../hooks/useAuth'
@@ -12,15 +12,18 @@ function Layout({ children }) {
   const { cartQuantity, loadCartItems } = useCart()
   const history = useHistory()
   const location = useLocation()
-  const isHomePage = location.pathname === '/' || location.pathname === '/index.html'
-
   const handleLogout = useCallback(() => {
     setShowCart(false)
     logout()
-    history.replace('/login')
+    history.replace('/')
   }, [history, logout])
 
   const handleOpenCart = useCallback(async () => {
+    if (!isLoggedIn) {
+      history.push('/login', { from: location.pathname })
+      return
+    }
+
     setShowCart(true)
 
     try {
@@ -28,41 +31,35 @@ function Layout({ children }) {
     } catch {
       // Cart displays the request error in the panel.
     }
-  }, [loadCartItems])
+  }, [history, isLoggedIn, loadCartItems, location.pathname])
 
   return (
     <div className="store-page">
-      <Navbar expand="lg" className="store-nav" variant="dark">
+      <div className="announcement-bar">Free shipping on orders over $75 &middot; Easy 30-day returns</div>
+      <Navbar expand="lg" className="store-nav" variant="light" sticky="top">
         <Container>
-          <Navbar.Brand as={NavLink} className="fw-bold text-uppercase" to="/">
-            The Generics
+          <Navbar.Brand as={NavLink} className="store-brand" to="/">
+            <span className="brand-mark"><ShoppingBag size={18} aria-hidden="true" /></span>
+            NORTHSTAR
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="store-navigation" />
           <Navbar.Collapse id="store-navigation">
             <Nav className="mx-auto">
-              <Nav.Link as={NavLink} to="/index.html" activeClassName="active">
+              <Nav.Link as={NavLink} exact to="/" activeClassName="active">
                 Home
               </Nav.Link>
               <Nav.Link
                 as={NavLink}
-                to={isLoggedIn ? '/store' : '/login'}
+                to="/store"
                 activeClassName="active"
               >
-                Products
+                Shop
               </Nav.Link>
               <Nav.Link as={NavLink} to="/about.html" activeClassName="active">
                 About
               </Nav.Link>
-              {!isLoggedIn && (
-                <Nav.Link as={NavLink} to="/login" activeClassName="active">
-                  Login
-                </Nav.Link>
-              )}
               <Nav.Link as={NavLink} to="/contact-us" activeClassName="active">
-                Contact Us
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/movies" activeClassName="active">
-                Movies
+                Contact
               </Nav.Link>
               {isLoggedIn && (
                 <Nav.Link as={NavLink} to="/profile" activeClassName="active">
@@ -70,66 +67,44 @@ function Layout({ children }) {
                 </Nav.Link>
               )}
             </Nav>
-            {isLoggedIn && (
-              <div className="account-actions">
-                <Button
-                  aria-label="Open cart"
-                  variant="outline-light"
-                  className="cart-preview"
-                  onClick={handleOpenCart}
-                >
-                  <ShoppingCart size={18} aria-hidden="true" />
-                  <span>Cart</span>
-                  <Badge bg="light" text="dark">
-                    {cartQuantity}
-                  </Badge>
-                </Button>
-                <Button variant="outline-light" onClick={handleLogout}>
-                  Logout
-                </Button>
-              </div>
-            )}
+            <div className="account-actions">
+              {isLoggedIn ? (
+                <>
+                  <Button as={NavLink} to="/profile" variant="link" className="nav-icon-button">
+                    <UserRound size={19} aria-hidden="true" /> <span>Account</span>
+                  </Button>
+                  <Button variant="link" className="nav-icon-button" onClick={handleLogout}>
+                    <LogOut size={18} aria-hidden="true" /> <span>Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button as={NavLink} to="/login" variant="link" className="login-link">Log in</Button>
+                  <Button as={NavLink} to="/signup" className="signup-nav-button">Sign up</Button>
+                </>
+              )}
+              <Button aria-label="Open cart" variant="link" className="cart-preview" onClick={handleOpenCart}>
+                <ShoppingCart size={20} aria-hidden="true" />
+                <span className="d-none d-sm-inline">Cart</span>
+                <Badge pill>{cartQuantity}</Badge>
+              </Button>
+            </div>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
       {isLoggedIn && <Cart onClose={() => setShowCart(false)} show={showCart} />}
 
-      <header className="store-header">
-        <Container>
-          <h1>The Generics</h1>
-          {isLoggedIn && isHomePage && (
-            <div className="home-hero-actions">
-              <Button variant="outline-light" className="latest-album-button">
-                Get our Latest Album
-              </Button>
-              <Button
-                aria-label="Play latest album"
-                variant="outline-info"
-                className="play-button"
-              >
-                <Play fill="currentColor" size={34} aria-hidden="true" />
-              </Button>
-            </div>
-          )}
-        </Container>
-      </header>
-
       {children}
 
       <footer className="store-footer">
         <Container className="footer-content">
-          <h2>The Generics</h2>
-          <div className="social-links">
-            <a href="https://www.youtube.com" aria-label="YouTube">
-              <MonitorPlay size={28} aria-hidden="true" />
-            </a>
-            <a href="https://spotify.com" aria-label="Spotify">
-              <Music2 size={28} aria-hidden="true" />
-            </a>
-            <a href="https://facebook.com" aria-label="Facebook">
-              <Share2 size={28} aria-hidden="true" />
-            </a>
+          <div><h2>NORTHSTAR</h2><p>Everyday goods, thoughtfully selected.</p></div>
+          <div className="footer-links">
+            <NavLink to="/store">Shop</NavLink>
+            <NavLink to="/about">Our story</NavLink>
+            <NavLink to="/contact-us">Contact</NavLink>
+            <a href="https://instagram.com" aria-label="Visit Northstar on Instagram"><Globe size={20} /></a>
           </div>
         </Container>
       </footer>

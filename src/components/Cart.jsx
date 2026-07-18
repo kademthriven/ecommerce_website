@@ -12,6 +12,7 @@ function Cart({ onClose, show }) {
     removeItemFromCart,
   } = useCart()
   const [removingItem, setRemovingItem] = useState('')
+  const [checkoutNotice, setCheckoutNotice] = useState('')
 
   const handleRemoveItem = useCallback(
     async (itemKey) => {
@@ -31,11 +32,12 @@ function Cart({ onClose, show }) {
   return (
     <Offcanvas show={show} onHide={onClose} placement="end" className="cart-panel">
       <Offcanvas.Header closeButton>
-        <Offcanvas.Title>Cart</Offcanvas.Title>
+        <Offcanvas.Title>Your cart</Offcanvas.Title>
       </Offcanvas.Header>
 
       <Offcanvas.Body>
         {cartError && <Alert variant="danger">{cartError}</Alert>}
+        {checkoutNotice && <Alert variant="success">{checkoutNotice}</Alert>}
 
         {isCartLoading && cartItems.length === 0 ? (
           <div className="d-flex justify-content-center py-5" role="status">
@@ -97,8 +99,8 @@ function Cart({ onClose, show }) {
           <strong>${cartTotal}</strong>
         </div>
 
-        <Button variant="info" className="purchase-btn text-white fw-bold">
-          Purchase
+        <Button disabled={cartItems.length === 0} className="purchase-btn" onClick={() => setCheckoutNotice('Your cart is ready. Connect a payment provider to accept live payments.')}>
+          Proceed to checkout
         </Button>
       </Offcanvas.Body>
     </Offcanvas>

@@ -1,9 +1,10 @@
 import { memo, useCallback, useRef, useState } from 'react'
-import { Button, Card, Container } from 'react-bootstrap'
+import { Alert, Button, Card, Container } from 'react-bootstrap'
 import { ArrowLeft, ShoppingCart, ZoomIn } from 'lucide-react'
-import { Link, Redirect, useParams } from 'react-router-dom'
+import { Link, Redirect, useHistory, useParams } from 'react-router-dom'
 import { findProductById } from '../data/products'
 import useCart from '../hooks/useCart'
+import useAuth from '../hooks/useAuth'
 
 const StarRating = memo(function StarRating({ rating }) {
   return (
@@ -40,7 +41,7 @@ const ProductGallery = memo(function ProductGallery({ images, title }) {
         <img
           ref={mainImageRef}
           src={selectedImage.src}
-          alt={`${title} — ${selectedImage.label}`}
+          alt={`${title} - ${selectedImage.label}`}
           style={{
             '--image-scale': selectedImage.scale,
             '--zoom-scale': selectedImage.scale * 1.65,
@@ -78,6 +79,27 @@ function ProductDetailPage() {
   const { productId } = useParams()
   const product = findProductById(productId)
   const { addItemToCart } = useCart()
+  const { isLoggedIn } = useAuth()
+  const history = useHistory()
+  const [isAdding, setIsAdding] = useState(false)
+  const [feedback, setFeedback] = useState('')
+
+  const handleAddToCart = useCallback(async () => {
+    if (!isLoggedIn) {
+      history.push('/login', { from: `/products/${productId}` })
+      return
+    }
+
+    setIsAdding(true)
+    setFeedback('')
+    try {
+      await addItemToCart(product)
+    } catch (error) {
+      setFeedback(error.message)
+    } finally {
+      setIsAdding(false)
+    }
+  }, [addItemToCart, history, isLoggedIn, product, productId])
 
   if (!product) {
     return <Redirect to="/store" />
@@ -87,28 +109,30 @@ function ProductDetailPage() {
     <main className="product-detail-section">
       <Container>
         <Link className="back-to-store" to="/store">
-          <ArrowLeft size={18} aria-hidden="true" /> Back to albums
+          <ArrowLeft size={18} aria-hidden="true" /> Back to shop
         </Link>
 
         <div className="product-detail-layout">
           <ProductGallery images={product.images} title={product.title} />
 
           <section className="product-summary" aria-labelledby="product-title">
-            <p className="product-eyebrow">Limited album edition</p>
+            <p className="product-eyebrow">{product.category}</p>
             <h2 id="product-title">{product.title}</h2>
             <StarRating rating={product.rating} />
             <p className="product-detail-price">${product.price}</p>
             <p className="product-description">{product.description}</p>
-            <Button className="product-add-button" onClick={() => addItemToCart(product)}>
-              <ShoppingCart size={19} aria-hidden="true" /> Add to Cart
+            <Button className="product-add-button" disabled={isAdding} onClick={handleAddToCart}>
+              <ShoppingCart size={19} aria-hidden="true" /> {isAdding ? 'Adding...' : isLoggedIn ? 'Add to cart' : 'Sign in to buy'}
             </Button>
+            {feedback && <Alert className="mt-3" variant="danger">{feedback}</Alert>}
+            <ul className="product-promises"><li>Free shipping over $75</li><li>30-day hassle-free returns</li><li>Secure checkout</li></ul>
           </section>
         </div>
 
         <section className="product-reviews" aria-labelledby="reviews-title">
           <div className="reviews-heading">
             <div>
-              <p className="product-eyebrow">Verified listeners</p>
+              <p className="product-eyebrow">Verified buyers</p>
               <h3 id="reviews-title">Customer Reviews</h3>
             </div>
             <StarRating rating={product.rating} />

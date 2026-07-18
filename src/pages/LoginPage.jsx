@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Button, Container, Form, Spinner } from 'react-bootstrap'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import { signInFirebaseAccount } from '../api/auth'
 import useAuth from '../hooks/useAuth'
 
 function LoginPage() {
   const { authNotice, login } = useAuth()
   const history = useHistory()
+  const location = useLocation()
   const [isLoading, setIsLoading] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
   const requestControllerRef = useRef(null)
@@ -28,7 +29,7 @@ function LoginPage() {
       const responseData = await signInFirebaseAccount(email, password, controller.signal)
 
       login(responseData.idToken, responseData.email)
-      history.replace('/store')
+      history.replace(location.state?.from || '/store')
     } catch (error) {
       if (error.name !== 'AbortError') {
         setFeedback({
@@ -42,7 +43,7 @@ function LoginPage() {
         setIsLoading(false)
       }
     }
-  }, [history, login])
+  }, [history, location.state, login])
 
   useEffect(() => () => requestControllerRef.current?.abort(), [])
 
@@ -51,8 +52,9 @@ function LoginPage() {
       <Container>
         <section className="auth-card" aria-labelledby="login-title">
           <div className="section-heading auth-heading">
-            <p className="text-uppercase fw-semibold">Welcome back</p>
-            <h2 id="login-title">Login</h2>
+            <p>WELCOME BACK</p>
+            <h1 id="login-title">Log in to Northstar</h1>
+            <span>Access your account and saved cart.</span>
           </div>
 
           {authNotice && (
@@ -68,6 +70,7 @@ function LoginPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                placeholder="you@example.com"
                 disabled={isLoading}
                 required
               />
@@ -79,6 +82,7 @@ function LoginPage() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                placeholder="Your password"
                 disabled={isLoading}
                 required
               />
@@ -88,10 +92,10 @@ function LoginPage() {
               {isLoading ? (
                 <>
                   <Spinner animation="border" size="sm" aria-hidden="true" />
-                  <span>Sending request...</span>
+                  <span>Logging in...</span>
                 </>
               ) : (
-                'Login'
+                'Log in'
               )}
             </Button>
 
@@ -101,6 +105,7 @@ function LoginPage() {
               </Alert>
             )}
 
+            <p className="auth-switch-copy">New to Northstar? <Link to="/signup">Create an account</Link></p>
           </Form>
         </section>
       </Container>

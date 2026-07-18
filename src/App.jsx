@@ -1,19 +1,29 @@
-import { Redirect, Route, Switch, useLocation } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Redirect, Route, Switch } from 'react-router-dom'
 import Layout from './components/Layout'
-import AboutPage from './pages/AboutPage'
-import ContactPage from './pages/ContactPage'
 import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import MoviesPage from './pages/MoviesPage'
-import ProductDetailPage from './pages/ProductDetailPage'
-import ProfilePage from './pages/ProfilePage'
-import StorePage from './pages/StorePage'
 import useAuth from './hooks/useAuth'
 import './App.css'
 
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const SignUpPage = lazy(() => import('./pages/SignUpPage'))
+const StorePage = lazy(() => import('./pages/StorePage'))
+
+function PageLoadingFallback() {
+  return (
+    <main className="route-loading" role="status" aria-live="polite">
+      <span className="route-loading-spinner" aria-hidden="true" />
+      <span>Loading page...</span>
+    </main>
+  )
+}
+
 function App() {
-  const { authNotice, isAuthLoading, isLoggedIn } = useAuth()
-  const location = useLocation()
+  const { isAuthLoading, isLoggedIn } = useAuth()
 
   if (isAuthLoading) {
     return (
@@ -26,29 +36,24 @@ function App() {
     )
   }
 
-  if (authNotice && location.pathname !== '/login') {
-    return <Redirect to="/login" />
-  }
-
   return (
     <Layout>
-      <Switch>
-        {!isLoggedIn && <Route path="/login" exact component={LoginPage} />}
+      <Suspense fallback={<PageLoadingFallback />}>
+        <Switch>
+          {!isLoggedIn && <Route path="/login" exact component={LoginPage} />}
+          {!isLoggedIn && <Route path="/signup" exact component={SignUpPage} />}
 
-        <Route path={['/', '/index.html']} exact component={HomePage} />
-        <Route path={['/about', '/about.html']} exact component={AboutPage} />
-        <Route path="/contact-us" exact component={ContactPage} />
-        <Route path="/movies" exact component={MoviesPage} />
-        {isLoggedIn && <Route path="/store" exact component={StorePage} />}
-        {isLoggedIn && (
+          <Route path={['/', '/index.html']} exact component={HomePage} />
+          <Route path={['/about', '/about.html']} exact component={AboutPage} />
+          <Route path="/contact-us" exact component={ContactPage} />
+          <Route path="/store" exact component={StorePage} />
           <Route path="/products/:productId" exact component={ProductDetailPage} />
-        )}
-        {!isLoggedIn && <Redirect from="/store" to="/login" />}
-        {!isLoggedIn && <Redirect from="/products/:productId" to="/login" />}
-        {isLoggedIn && <Route path="/profile" exact component={ProfilePage} />}
+          {isLoggedIn && <Route path="/profile" exact component={ProfilePage} />}
+          {isLoggedIn && <Redirect from={['/login', '/signup']} to="/store" />}
 
-        <Redirect to="/" />
-      </Switch>
+          <Redirect to="/" />
+        </Switch>
+      </Suspense>
     </Layout>
   )
 }

@@ -11,21 +11,21 @@ function AboutPage() {
 
         <div className="about-content">
           <Image
-            src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=600&q=80"
-            alt="Band performing on stage"
-            roundedCircle
+            src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85"
+            alt="Northstar team working together in a bright studio"
+            loading="lazy"
             className="about-image"
           />
           <div className="about-copy">
             <p>
-              The Generics is a music store built for fans who love collecting
-              bold, colorful albums. Browse the featured collection, add albums
-              to your cart, and keep track of every item while you shop.
+              Northstar began with a simple idea: everyday products should be useful,
+              well made, and beautiful enough to keep. We search for thoughtful designs
+              that earn their place in your routine.
             </p>
             <p>
-              This About page is rendered through React Router, so clicking the
-              About navigation link changes the URL without refreshing the app.
-              The route can also be opened directly and shared as a normal page.
+              We keep the collection intentionally small so choosing feels easy. Every
+              piece is selected for lasting materials, honest value, and a clean point
+              of view that will still feel good next season.
             </p>
           </div>
         </div>
