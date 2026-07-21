@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { createCartItem, deleteCartItem, getCartItems } from '../api/cart'
 import useAuth from '../hooks/useAuth'
+import { uiActions } from '../store/uiSlice'
 import CartContext from './cartContext'
 
 function getCartItemKey(item) {
@@ -37,6 +39,7 @@ function groupCartItems(savedCartItems) {
 
 function CartProvider({ children }) {
   const { userEmail } = useAuth()
+  const dispatch = useDispatch()
   const [cartItems, setCartItems] = useState([])
   const [cartError, setCartError] = useState('')
   const [isCartLoading, setIsCartLoading] = useState(false)
@@ -49,20 +52,35 @@ function CartProvider({ children }) {
 
     setCartError('')
     setIsCartLoading(true)
+    dispatch(uiActions.showNotification({
+      status: 'pending',
+      title: 'Sending...',
+      message: 'Loading cart data!',
+    }))
 
     try {
       const savedCartItems = await getCartItems(userEmail)
 
       const groupedCartItems = groupCartItems(savedCartItems)
       setCartItems(groupedCartItems)
+      dispatch(uiActions.showNotification({
+        status: 'success',
+        title: 'Success!',
+        message: 'Loaded cart data successfully!',
+      }))
       return groupedCartItems
     } catch (error) {
       setCartError(error.message)
+      dispatch(uiActions.showNotification({
+        status: 'error',
+        title: 'Error!',
+        message: error.message,
+      }))
       throw error
     } finally {
       setIsCartLoading(false)
     }
-  }, [userEmail])
+  }, [dispatch, userEmail])
 
   const addItemToCart = useCallback(
     async (product) => {
@@ -71,42 +89,63 @@ function CartProvider({ children }) {
       }
 
       setCartError('')
-      const savedItem = await createCartItem(userEmail, product)
-      const itemKey = getCartItemKey(product)
+      dispatch(uiActions.showNotification({
+        status: 'pending',
+        title: 'Sending...',
+        message: 'Sending cart data!',
+      }))
 
-      setCartItems((currentCartItems) => {
-        const existingItem = currentCartItems.find(
-          (item) => getCartItemKey(item) === itemKey,
-        )
+      try {
+        const savedItem = await createCartItem(userEmail, product)
+        const itemKey = getCartItemKey(product)
 
-        if (existingItem) {
-          return currentCartItems.map((item) =>
-            getCartItemKey(item) === itemKey
-              ? {
-                  ...item,
-                  quantity: item.quantity + 1,
-                  recordIds: savedItem._id
-                    ? [...item.recordIds, savedItem._id]
-                    : item.recordIds,
-                }
-              : item,
+        setCartItems((currentCartItems) => {
+          const existingItem = currentCartItems.find(
+            (item) => getCartItemKey(item) === itemKey,
           )
-        }
 
-        return [
-          ...currentCartItems,
-          {
-            imageUrl: product.imageUrl,
-            price: product.price,
-            productId: itemKey,
-            quantity: 1,
-            recordIds: savedItem._id ? [savedItem._id] : [],
-            title: product.title,
-          },
-        ]
-      })
+          if (existingItem) {
+            return currentCartItems.map((item) =>
+              getCartItemKey(item) === itemKey
+                ? {
+                    ...item,
+                    quantity: item.quantity + 1,
+                    recordIds: savedItem._id
+                      ? [...item.recordIds, savedItem._id]
+                      : item.recordIds,
+                  }
+                : item,
+            )
+          }
+
+          return [
+            ...currentCartItems,
+            {
+              imageUrl: product.imageUrl,
+              price: product.price,
+              productId: itemKey,
+              quantity: 1,
+              recordIds: savedItem._id ? [savedItem._id] : [],
+              title: product.title,
+            },
+          ]
+        })
+        dispatch(uiActions.showNotification({
+          status: 'success',
+          title: 'Success!',
+          message: 'Sent cart data successfully!',
+        }))
+      } catch (error) {
+        setCartError(error.message)
+        dispatch(uiActions.showNotification({
+          status: 'error',
+          title: 'Error!',
+          message: error.message,
+        }))
+        throw error
+      }
     },
-    [userEmail],
+    [dispatch, userEmail],
   )
 
   const decreaseItemQuantity = useCallback(
@@ -122,11 +161,21 @@ function CartProvider({ children }) {
       if (!recordId) {
         const error = new Error('Could not update the cart item: its saved record is missing.')
         setCartError(error.message)
+        dispatch(uiActions.showNotification({
+          status: 'error',
+          title: 'Error!',
+          message: error.message,
+        }))
         throw error
       }
 
       setCartError('')
       setIsCartLoading(true)
+      dispatch(uiActions.showNotification({
+        status: 'pending',
+        title: 'Sending...',
+        message: 'Sending cart data!',
+      }))
 
       try {
         await deleteCartItem(userEmail, recordId)
@@ -147,14 +196,24 @@ function CartProvider({ children }) {
             }]
           }),
         )
+        dispatch(uiActions.showNotification({
+          status: 'success',
+          title: 'Success!',
+          message: 'Sent cart data successfully!',
+        }))
       } catch (error) {
         setCartError(error.message)
+        dispatch(uiActions.showNotification({
+          status: 'error',
+          title: 'Error!',
+          message: error.message,
+        }))
         throw error
       } finally {
         setIsCartLoading(false)
       }
     },
-    [cartItems, userEmail],
+    [cartItems, dispatch, userEmail],
   )
 
   const removeItemFromCart = useCallback(
@@ -167,6 +226,11 @@ function CartProvider({ children }) {
 
       setCartError('')
       setIsCartLoading(true)
+      dispatch(uiActions.showNotification({
+        status: 'pending',
+        title: 'Sending...',
+        message: 'Sending cart data!',
+      }))
 
       try {
         await Promise.all(
@@ -175,14 +239,24 @@ function CartProvider({ children }) {
         setCartItems((currentCartItems) =>
           currentCartItems.filter((item) => getCartItemKey(item) !== itemKey),
         )
+        dispatch(uiActions.showNotification({
+          status: 'success',
+          title: 'Success!',
+          message: 'Sent cart data successfully!',
+        }))
       } catch (error) {
         setCartError(error.message)
+        dispatch(uiActions.showNotification({
+          status: 'error',
+          title: 'Error!',
+          message: error.message,
+        }))
         throw error
       } finally {
         setIsCartLoading(false)
       }
     },
-    [cartItems, userEmail],
+    [cartItems, dispatch, userEmail],
   )
 
   const cartQuantity = cartItems.reduce(
@@ -202,23 +276,39 @@ function CartProvider({ children }) {
 
     let isCurrent = true
 
+    dispatch(uiActions.showNotification({
+      status: 'pending',
+      title: 'Sending...',
+      message: 'Loading cart data!',
+    }))
+
     getCartItems(userEmail)
       .then((savedCartItems) => {
         if (isCurrent) {
           setCartItems(groupCartItems(savedCartItems))
           setCartError('')
+          dispatch(uiActions.showNotification({
+            status: 'success',
+            title: 'Success!',
+            message: 'Loaded cart data successfully!',
+          }))
         }
       })
       .catch((error) => {
         if (isCurrent) {
           setCartError(error.message)
+          dispatch(uiActions.showNotification({
+            status: 'error',
+            title: 'Error!',
+            message: error.message,
+          }))
         }
       })
 
     return () => {
       isCurrent = false
     }
-  }, [userEmail])
+  }, [dispatch, userEmail])
 
   const value = useMemo(
     () => ({

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
+import { Alert, Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { Globe, LogOut, ShoppingBag, ShoppingCart, UserRound } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { NavLink, useHistory } from 'react-router-dom'
@@ -7,11 +7,13 @@ import Cart from './Cart'
 import useAuth from '../hooks/useAuth'
 import useCart from '../hooks/useCart'
 import { cartActions } from '../store/cartSlice'
+import { uiActions } from '../store/uiSlice'
 
 function Layout({ children }) {
   const { isLoggedIn, logout } = useAuth()
-  const { cartQuantity, loadCartItems } = useCart()
+  const { cartQuantity } = useCart()
   const isCartVisible = useSelector((state) => state.cart.isVisible)
+  const notification = useSelector((state) => state.ui.notification)
   const dispatch = useDispatch()
   const history = useHistory()
   const handleLogout = useCallback(() => {
@@ -20,22 +22,30 @@ function Layout({ children }) {
     history.replace('/')
   }, [dispatch, history, logout])
 
-  const handleToggleCart = useCallback(async () => {
+  const handleToggleCart = useCallback(() => {
     dispatch(cartActions.toggleCart())
+  }, [dispatch])
 
-    if (isCartVisible || !isLoggedIn) {
-      return
-    }
-
-    try {
-      await loadCartItems()
-    } catch {
-      // Cart displays the request error in the panel.
-    }
-  }, [dispatch, isCartVisible, isLoggedIn, loadCartItems])
+  const notificationVariant = notification?.status === 'error'
+    ? 'danger'
+    : notification?.status === 'success'
+      ? 'success'
+      : 'info'
 
   return (
     <div className="store-page">
+      {notification && (
+        <Alert
+          className="request-notification"
+          dismissible
+          onClose={() => dispatch(uiActions.clearNotification())}
+          role={notification.status === 'error' ? 'alert' : 'status'}
+          variant={notificationVariant}
+        >
+          <strong>{notification.title}</strong>
+          <span>{notification.message}</span>
+        </Alert>
+      )}
       <div className="announcement-bar">Free shipping on orders over $75 &middot; Easy 30-day returns</div>
       <Navbar expand="lg" className="store-nav" variant="light" sticky="top">
         <Container>

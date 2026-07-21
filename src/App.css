@@ -4,6 +4,27 @@
   background: #f8f7f2;
 }
 
+.request-notification {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.85rem clamp(1rem, 6vw, 5rem);
+  border: 0;
+  border-radius: 0;
+  font-size: 0.95rem;
+}
+
+.request-notification > span {
+  text-align: center;
+}
+
+.request-notification .btn-close {
+  position: static;
+  padding: 0.5rem;
+}
+
 .route-loading {
   display: flex;
   min-height: 55vh;
@@ -1155,6 +1176,16 @@
 }
 
 @media (max-width: 575.98px) {
+  .request-notification {
+    grid-template-columns: 1fr auto;
+  }
+
+  .request-notification > span {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: left;
+  }
+
   .announcement-bar {
     font-size: 0.68rem;
   }
