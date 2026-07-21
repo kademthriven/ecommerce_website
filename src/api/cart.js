@@ -1,3 +1,5 @@
+import { getFirebaseRequestError, getFirebaseUrl } from './firebase'
+
 const configuredCrudCrudApiUrl = import.meta.env.VITE_CRUDCRUD_API_URL?.replace(/\/+$/, '')
 
 const crudCrudApiUrl = configuredCrudCrudApiUrl?.includes('YOUR_CRUDCRUD')
@@ -71,4 +73,25 @@ export async function deleteCartItem(userEmail, recordId, signal) {
   if (!response.ok) {
     throw new Error(`Could not remove the cart item: ${response.statusText || 'request failed'}.`)
   }
+}
+
+export async function putCartData(userEmail, cart, signal) {
+  const cartOwnerId = userEmail?.replace(/[@.]/g, '')
+
+  if (!cartOwnerId) {
+    throw new Error('A valid email address is required to save a cart.')
+  }
+
+  const response = await fetch(getFirebaseUrl(`carts/${cartOwnerId}`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cart),
+    signal,
+  })
+
+  if (!response.ok) {
+    throw new Error(getFirebaseRequestError('save the cart', response))
+  }
+
+  return cart
 }

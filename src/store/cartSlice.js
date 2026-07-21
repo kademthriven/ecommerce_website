@@ -1,6 +1,35 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { getCartItems } from '../api/cart'
-import { uiActions } from './uiSlice'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { getCartItems, putCartData } from '../api/cart'
+
+export const fetchCartData = createAsyncThunk(
+  'cart/fetchCartData',
+  async (userEmail, { rejectWithValue, signal }) => {
+    try {
+      return await getCartItems(userEmail, signal)
+    } catch (error) {
+      if (signal.aborted) {
+        throw error
+      }
+
+      return rejectWithValue(error.message)
+    }
+  },
+)
+
+export const sendCartData = createAsyncThunk(
+  'cart/sendCartData',
+  async ({ userEmail, cart }, { rejectWithValue, signal }) => {
+    try {
+      return await putCartData(userEmail, cart, signal)
+    } catch (error) {
+      if (signal.aborted) {
+        throw error
+      }
+
+      return rejectWithValue(error.message)
+    }
+  },
+)
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -18,37 +47,4 @@ const cartSlice = createSlice({
 })
 
 export const cartActions = cartSlice.actions
-
-export function fetchCartData(userEmail, signal) {
-  return async (dispatch) => {
-    dispatch(uiActions.showNotification({
-      status: 'pending',
-      title: 'Sending...',
-      message: 'Loading cart data!',
-    }))
-
-    try {
-      const cartItems = await getCartItems(userEmail, signal)
-
-      dispatch(uiActions.showNotification({
-        status: 'success',
-        title: 'Success!',
-        message: 'Loaded cart data successfully!',
-      }))
-
-      return cartItems
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        dispatch(uiActions.showNotification({
-          status: 'error',
-          title: 'Error!',
-          message: error.message,
-        }))
-      }
-
-      throw error
-    }
-  }
-}
-
 export default cartSlice.reducer

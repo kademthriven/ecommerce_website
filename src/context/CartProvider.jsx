@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { createCartItem, deleteCartItem } from '../api/cart'
 import useAuth from '../hooks/useAuth'
-import { fetchCartData } from '../store/cartSlice'
+import { fetchCartData, sendCartData } from '../store/cartSlice'
 import { uiActions } from '../store/uiSlice'
 import CartContext from './cartContext'
 
 function getCartItemKey(item) {
   return item.productId || item.title
+}
+
+function getCartErrorMessage(error) {
+  return typeof error === 'string' ? error : error.message
 }
 
 function groupCartItems(savedCartItems) {
@@ -43,6 +47,7 @@ function CartProvider({ children }) {
   const dispatch = useDispatch()
   const [cartItems, setCartItems] = useState([])
   const [cartError, setCartError] = useState('')
+  const [hasHydratedCart, setHasHydratedCart] = useState(false)
   const [isCartLoading, setIsCartLoading] = useState(false)
 
   const loadCartItems = useCallback(async () => {
@@ -55,13 +60,14 @@ function CartProvider({ children }) {
     setIsCartLoading(true)
 
     try {
-      const savedCartItems = await dispatch(fetchCartData(userEmail))
+      const savedCartItems = await dispatch(fetchCartData(userEmail)).unwrap()
 
       const groupedCartItems = groupCartItems(savedCartItems)
       setCartItems(groupedCartItems)
+      setHasHydratedCart(true)
       return groupedCartItems
     } catch (error) {
-      setCartError(error.message)
+      setCartError(getCartErrorMessage(error))
       throw error
     } finally {
       setIsCartLoading(false)
@@ -263,16 +269,18 @@ function CartProvider({ children }) {
     let isCurrent = true
     const controller = new AbortController()
 
-    dispatch(fetchCartData(userEmail, controller.signal))
+    dispatch(fetchCartData(userEmail, { signal: controller.signal }))
+      .unwrap()
       .then((savedCartItems) => {
         if (isCurrent) {
           setCartItems(groupCartItems(savedCartItems))
           setCartError('')
+          setHasHydratedCart(true)
         }
       })
       .catch((error) => {
         if (isCurrent && error.name !== 'AbortError') {
-          setCartError(error.message)
+          setCartError(getCartErrorMessage(error))
         }
       })
 
@@ -281,6 +289,38 @@ function CartProvider({ children }) {
       controller.abort()
     }
   }, [dispatch, userEmail])
+
+  useEffect(() => {
+    if (!userEmail || !hasHydratedCart) {
+      return undefined
+    }
+
+    const controller = new AbortController()
+    const items = cartItems.map(({ imageUrl, price, productId, quantity, title }) => ({
+      imageUrl,
+      price,
+      productId,
+      quantity,
+      title,
+    }))
+    const cart = {
+      items,
+      totalAmount: items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0,
+      ),
+      totalQuantity: items.reduce(
+        (total, item) => total + item.quantity,
+        0,
+      ),
+    }
+
+    dispatch(sendCartData({ userEmail, cart }, { signal: controller.signal }))
+
+    return () => {
+      controller.abort()
+    }
+  }, [cartItems, dispatch, hasHydratedCart, userEmail])
 
   const value = useMemo(
     () => ({
