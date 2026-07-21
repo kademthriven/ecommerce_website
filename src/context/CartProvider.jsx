@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { createCartItem, deleteCartItem, getCartItems } from '../api/cart'
+import { createCartItem, deleteCartItem } from '../api/cart'
 import useAuth from '../hooks/useAuth'
+import { fetchCartData } from '../store/cartSlice'
 import { uiActions } from '../store/uiSlice'
 import CartContext from './cartContext'
 
@@ -52,30 +53,15 @@ function CartProvider({ children }) {
 
     setCartError('')
     setIsCartLoading(true)
-    dispatch(uiActions.showNotification({
-      status: 'pending',
-      title: 'Sending...',
-      message: 'Loading cart data!',
-    }))
 
     try {
-      const savedCartItems = await getCartItems(userEmail)
+      const savedCartItems = await dispatch(fetchCartData(userEmail))
 
       const groupedCartItems = groupCartItems(savedCartItems)
       setCartItems(groupedCartItems)
-      dispatch(uiActions.showNotification({
-        status: 'success',
-        title: 'Success!',
-        message: 'Loaded cart data successfully!',
-      }))
       return groupedCartItems
     } catch (error) {
       setCartError(error.message)
-      dispatch(uiActions.showNotification({
-        status: 'error',
-        title: 'Error!',
-        message: error.message,
-      }))
       throw error
     } finally {
       setIsCartLoading(false)
@@ -275,38 +261,24 @@ function CartProvider({ children }) {
     }
 
     let isCurrent = true
+    const controller = new AbortController()
 
-    dispatch(uiActions.showNotification({
-      status: 'pending',
-      title: 'Sending...',
-      message: 'Loading cart data!',
-    }))
-
-    getCartItems(userEmail)
+    dispatch(fetchCartData(userEmail, controller.signal))
       .then((savedCartItems) => {
         if (isCurrent) {
           setCartItems(groupCartItems(savedCartItems))
           setCartError('')
-          dispatch(uiActions.showNotification({
-            status: 'success',
-            title: 'Success!',
-            message: 'Loaded cart data successfully!',
-          }))
         }
       })
       .catch((error) => {
-        if (isCurrent) {
+        if (isCurrent && error.name !== 'AbortError') {
           setCartError(error.message)
-          dispatch(uiActions.showNotification({
-            status: 'error',
-            title: 'Error!',
-            message: error.message,
-          }))
         }
       })
 
     return () => {
       isCurrent = false
+      controller.abort()
     }
   }, [dispatch, userEmail])
 
