@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Alert, Button, Image, Offcanvas, Spinner, Table } from 'react-bootstrap'
-import { Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import useCart from '../hooks/useCart'
 
 function Cart({ onClose, show }) {
@@ -8,10 +8,13 @@ function Cart({ onClose, show }) {
     cartError,
     cartItems,
     cartTotal,
+    decreaseItemQuantity,
+    increaseItemQuantity,
     isCartLoading,
     removeItemFromCart,
   } = useCart()
   const [removingItem, setRemovingItem] = useState('')
+  const [updatingItem, setUpdatingItem] = useState('')
   const [checkoutNotice, setCheckoutNotice] = useState('')
 
   const handleRemoveItem = useCallback(
@@ -27,6 +30,26 @@ function Cart({ onClose, show }) {
       }
     },
     [removeItemFromCart],
+  )
+
+  const handleQuantityChange = useCallback(
+    async (item, change) => {
+      const itemKey = item.productId || item.title
+      setUpdatingItem(itemKey)
+
+      try {
+        if (change > 0) {
+          await increaseItemQuantity(item)
+        } else {
+          await decreaseItemQuantity(itemKey)
+        }
+      } catch {
+        // Cart displays the request error in the panel.
+      } finally {
+        setUpdatingItem('')
+      }
+    },
+    [decreaseItemQuantity, increaseItemQuantity],
   )
 
   return (
@@ -70,7 +93,27 @@ function Cart({ onClose, show }) {
                   </td>
                   <td>${item.price}</td>
                   <td>
-                    <span className="quantity-pill">{item.quantity}</span>
+                    <div className="quantity-controls" aria-label={`Quantity for ${item.title}`}>
+                      <Button
+                        aria-label={`Decrease ${item.title} quantity`}
+                        variant="outline-secondary"
+                        size="sm"
+                        disabled={isCartLoading || updatingItem === itemKey}
+                        onClick={() => handleQuantityChange(item, -1)}
+                      >
+                        <Minus size={15} aria-hidden="true" />
+                      </Button>
+                      <span className="quantity-pill" aria-live="polite">{item.quantity}</span>
+                      <Button
+                        aria-label={`Increase ${item.title} quantity`}
+                        variant="outline-secondary"
+                        size="sm"
+                        disabled={isCartLoading || updatingItem === itemKey}
+                        onClick={() => handleQuantityChange(item, 1)}
+                      >
+                        <Plus size={15} aria-hidden="true" />
+                      </Button>
+                    </div>
                   </td>
                   <td className="text-end">
                     <Button
@@ -78,7 +121,7 @@ function Cart({ onClose, show }) {
                       variant="danger"
                       size="sm"
                       className="remove-btn"
-                      disabled={isCartLoading || removingItem === itemKey}
+                      disabled={isCartLoading || removingItem === itemKey || updatingItem === itemKey}
                       onClick={() => handleRemoveItem(itemKey)}
                     >
                       <Trash2 size={16} aria-hidden="true" />

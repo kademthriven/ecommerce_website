@@ -34,11 +34,12 @@ async function readCartResponse(response, action) {
 }
 
 export async function createCartItem(userEmail, product, signal) {
+  const productId = product.id || product.productId
   const response = await fetch(getCartUrl(userEmail), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      productId: product.id,
+      productId,
       title: product.title,
       price: product.price,
       imageUrl: product.imageUrl,

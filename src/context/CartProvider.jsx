@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createCartItem, deleteCartItem, getCartItems } from '../api/cart'
 import useAuth from '../hooks/useAuth'
 import CartContext from './cartContext'
@@ -15,7 +15,9 @@ function groupCartItems(savedCartItems) {
 
     if (existingItem) {
       existingItem.quantity += quantity
-      existingItem.recordIds.push(savedItem._id)
+      if (savedItem._id) {
+        existingItem.recordIds.push(savedItem._id)
+      }
       return groupedItems
     }
 
@@ -70,19 +72,22 @@ function CartProvider({ children }) {
 
       setCartError('')
       const savedItem = await createCartItem(userEmail, product)
+      const itemKey = getCartItemKey(product)
 
       setCartItems((currentCartItems) => {
         const existingItem = currentCartItems.find(
-          (item) => getCartItemKey(item) === product.id,
+          (item) => getCartItemKey(item) === itemKey,
         )
 
         if (existingItem) {
           return currentCartItems.map((item) =>
-            getCartItemKey(item) === product.id
+            getCartItemKey(item) === itemKey
               ? {
                   ...item,
                   quantity: item.quantity + 1,
-                  recordIds: [...item.recordIds, savedItem._id],
+                  recordIds: savedItem._id
+                    ? [...item.recordIds, savedItem._id]
+                    : item.recordIds,
                 }
               : item,
           )
@@ -93,15 +98,63 @@ function CartProvider({ children }) {
           {
             imageUrl: product.imageUrl,
             price: product.price,
-            productId: product.id,
+            productId: itemKey,
             quantity: 1,
-            recordIds: [savedItem._id],
+            recordIds: savedItem._id ? [savedItem._id] : [],
             title: product.title,
           },
         ]
       })
     },
     [userEmail],
+  )
+
+  const decreaseItemQuantity = useCallback(
+    async (itemKey) => {
+      const cartItem = cartItems.find((item) => getCartItemKey(item) === itemKey)
+
+      if (!cartItem || !userEmail) {
+        return
+      }
+
+      const recordId = cartItem.recordIds.at(-1)
+
+      if (!recordId) {
+        const error = new Error('Could not update the cart item: its saved record is missing.')
+        setCartError(error.message)
+        throw error
+      }
+
+      setCartError('')
+      setIsCartLoading(true)
+
+      try {
+        await deleteCartItem(userEmail, recordId)
+        setCartItems((currentCartItems) =>
+          currentCartItems.flatMap((item) => {
+            if (getCartItemKey(item) !== itemKey) {
+              return [item]
+            }
+
+            if (item.quantity <= 1) {
+              return []
+            }
+
+            return [{
+              ...item,
+              quantity: item.quantity - 1,
+              recordIds: item.recordIds.filter((id) => id !== recordId),
+            }]
+          }),
+        )
+      } catch (error) {
+        setCartError(error.message)
+        throw error
+      } finally {
+        setIsCartLoading(false)
+      }
+    },
+    [cartItems, userEmail],
   )
 
   const removeItemFromCart = useCallback(
@@ -142,6 +195,31 @@ function CartProvider({ children }) {
     0,
   )
 
+  useEffect(() => {
+    if (!userEmail) {
+      return undefined
+    }
+
+    let isCurrent = true
+
+    getCartItems(userEmail)
+      .then((savedCartItems) => {
+        if (isCurrent) {
+          setCartItems(groupCartItems(savedCartItems))
+          setCartError('')
+        }
+      })
+      .catch((error) => {
+        if (isCurrent) {
+          setCartError(error.message)
+        }
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [userEmail])
+
   const value = useMemo(
     () => ({
       addItemToCart,
@@ -149,6 +227,8 @@ function CartProvider({ children }) {
       cartItems,
       cartQuantity,
       cartTotal,
+      decreaseItemQuantity,
+      increaseItemQuantity: addItemToCart,
       isCartLoading,
       loadCartItems,
       removeItemFromCart,
@@ -159,6 +239,7 @@ function CartProvider({ children }) {
       cartItems,
       cartQuantity,
       cartTotal,
+      decreaseItemQuantity,
       isCartLoading,
       loadCartItems,
       removeItemFromCart,
