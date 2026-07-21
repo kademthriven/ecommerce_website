@@ -30,7 +30,7 @@ function Cart({ onClose, show }) {
   )
 
   return (
-    <Offcanvas show={show} onHide={onClose} placement="end" className="cart-panel">
+    <Offcanvas id="shopping-cart" show={show} onHide={onClose} placement="end" className="cart-panel">
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>Your cart</Offcanvas.Title>
       </Offcanvas.Header>

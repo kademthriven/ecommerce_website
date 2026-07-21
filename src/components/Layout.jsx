@@ -1,37 +1,38 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Badge, Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { Globe, LogOut, ShoppingBag, ShoppingCart, UserRound } from 'lucide-react'
-import { NavLink, useHistory, useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { NavLink, useHistory } from 'react-router-dom'
 import Cart from './Cart'
 import useAuth from '../hooks/useAuth'
 import useCart from '../hooks/useCart'
+import { cartActions } from '../store/cartSlice'
 
 function Layout({ children }) {
-  const [showCart, setShowCart] = useState(false)
   const { isLoggedIn, logout } = useAuth()
   const { cartQuantity, loadCartItems } = useCart()
+  const isCartVisible = useSelector((state) => state.cart.isVisible)
+  const dispatch = useDispatch()
   const history = useHistory()
-  const location = useLocation()
   const handleLogout = useCallback(() => {
-    setShowCart(false)
+    dispatch(cartActions.hideCart())
     logout()
     history.replace('/')
-  }, [history, logout])
+  }, [dispatch, history, logout])
 
-  const handleOpenCart = useCallback(async () => {
-    if (!isLoggedIn) {
-      history.push('/login', { from: location.pathname })
+  const handleToggleCart = useCallback(async () => {
+    dispatch(cartActions.toggleCart())
+
+    if (isCartVisible || !isLoggedIn) {
       return
     }
-
-    setShowCart(true)
 
     try {
       await loadCartItems()
     } catch {
       // Cart displays the request error in the panel.
     }
-  }, [history, isLoggedIn, loadCartItems, location.pathname])
+  }, [dispatch, isCartVisible, isLoggedIn, loadCartItems])
 
   return (
     <div className="store-page">
@@ -83,9 +84,16 @@ function Layout({ children }) {
                   <Button as={NavLink} to="/signup" className="signup-nav-button">Sign up</Button>
                 </>
               )}
-              <Button aria-label="Open cart" variant="link" className="cart-preview" onClick={handleOpenCart}>
+              <Button
+                aria-controls="shopping-cart"
+                aria-expanded={isCartVisible}
+                aria-label="Toggle cart"
+                variant="link"
+                className="cart-preview"
+                onClick={handleToggleCart}
+              >
                 <ShoppingCart size={20} aria-hidden="true" />
-                <span className="d-none d-sm-inline">Cart</span>
+                <span className="d-none d-sm-inline">My Cart</span>
                 <Badge pill>{cartQuantity}</Badge>
               </Button>
             </div>
@@ -93,7 +101,10 @@ function Layout({ children }) {
         </Container>
       </Navbar>
 
-      {isLoggedIn && <Cart onClose={() => setShowCart(false)} show={showCart} />}
+      <Cart
+        onClose={() => dispatch(cartActions.hideCart())}
+        show={isCartVisible}
+      />
 
       {children}
 
